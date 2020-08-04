@@ -4,7 +4,7 @@
   "description": "A bot for the Team Codemonkey Discord",
   "main": "index.js",
   "repository": "https://github.com/jondeaves/tcm-bot",
-  "bugs": "https://github.com/jondeaves/jondeaves/issues",
+  "bugs": "https://github.com/jondeaves/tcm-bot/issues",
   "author": "Jon Deaves <hello@jondeaves.me> https://jondeaves.me",
   "contributors": [
     "Jon Deaves <hello@jondeaves.me> https://jondeaves.me"
