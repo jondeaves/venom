@@ -31,6 +31,7 @@ export default class ConfigService {
 
   private setup(): void {
     this.config = {
+      BOT_TRIGGER: process.env.BOT_TRIGGER || '!',
       DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
       ENVIRONMENT: (process.env.NODE_ENV as Environment) || 'development',
       LOG_LEVEL: (process.env.LOG_LEVEL as LogLevel) || 'info',
