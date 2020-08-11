@@ -1,10 +1,10 @@
 {
-  "name": "teamcodemonkey-bot",
+  "name": "venom",
   "version": "0.0.1",
-  "description": "A bot for the Team Codemonkey Discord",
+  "description": "A bot for the Creation Asylum Discord",
   "main": "index.js",
-  "repository": "https://github.com/jondeaves/tcm-bot",
-  "bugs": "https://github.com/jondeaves/jondeaves/issues",
+  "repository": "https://github.com/jondeaves/venom",
+  "bugs": "https://github.com/jondeaves/venom/issues",
   "author": "Jon Deaves <hello@jondeaves.me> https://jondeaves.me",
   "contributors": [
     "Jon Deaves <hello@jondeaves.me> https://jondeaves.me"
