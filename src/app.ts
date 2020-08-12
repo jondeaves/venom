@@ -25,7 +25,7 @@ export default class App {
 
     // Triggers once after connecting to server
     this._discordClient.once('ready', () => {
-      this._loggerService.log('info', 'The Bot is connected to Discord server');
+      this._loggerService.log('info', 'Venom is connected to the Discord server');
     });
 
     // Triggers on every message the bot can see
@@ -40,29 +40,29 @@ export default class App {
       const command = commandList.get(commandName) || commandList.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
       if (!command) {
-        return message.reply('Monkey no understand that command yet!');
+        return message.reply('looks like I haven\'t learned that trick yet!');
       };
 
       try {
         await command.execute(message, args, prefix, commandList);
       } catch (error) {
         this._loggerService.log('error', error.message);
-        message.reply('there was an error trying to execute that command!');
+        message.reply('there was an error trying to follow that command!');
       }
     });
 
     this._discordClient.on('guildMemberAdd', member => {
       // base
       const greetings = ["Hello, {name}! CA greets you!", "Welcome to CA, {name}!", "Hi {name}! Welcome to CA!"];
-      const greeting = greetings[Math.floor(Math.random() * greetings.length )];
+      const greeting = greetings[Math.floor(Math.random() * greetings.length - 1)];
       // favor
       const flavors = [
       "As PROMISED, grab a free pie! Courtesy of {random}!", 
       "The water is pure here! You should ask {random} for their water purified water for a sip!",
-      "Welcome to CA! Home of the sane, the smart and {random}!"
+      "Home of the sane, the smart and {random}!"
       ];
       const randomMember = member.guild.members.cache.random(); 
-      const flavor = flavors[Math.floor(Math.random() * flavors.length)];
+      const flavor = flavors[Math.floor(Math.random() * flavors.length - 1)];
       // result
       member.guild.systemChannel.send(greeting.replace('{name}', member.displayName) + " " + flavor.replace('{random}', randomMember.displayName));
     });
