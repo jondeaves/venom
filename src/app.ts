@@ -1,5 +1,6 @@
 import { exit } from 'process';
 import Discord from 'discord.js';
+import mongoose from 'mongoose';
 
 import container from './inversity.config';
 
@@ -14,8 +15,12 @@ export default class App {
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
 
   private _discordClient: Discord.Client;
+  private _db: mongoose.Connection;
 
   public async init(): Promise<void> {
+    await this.dbConnect();
+    console.log(this._db);
+
     this._discordClient = new Discord.Client();
     const commandList = new Discord.Collection<string, ICommand>();
 
@@ -54,14 +59,14 @@ export default class App {
     this._discordClient.on('guildMemberAdd', member => {
       // base
       const greetings = ["Hello, {name}! CA greets you!", "Welcome to CA, {name}!", "Hi {name}! Welcome to CA!"];
-      const greeting = greetings[Math.floor(Math.random() * greetings.length )];
+      const greeting = greetings[Math.floor(Math.random() * greetings.length)];
       // favor
       const flavors = [
-      "As PROMISED, grab a free pie! Courtesy of {random}!", 
-      "The water is pure here! You should ask {random} for their water purified water for a sip!",
-      "Welcome to CA! Home of the sane, the smart and {random}!"
+        "As PROMISED, grab a free pie! Courtesy of {random}!",
+        "The water is pure here! You should ask {random} for their water purified water for a sip!",
+        "Welcome to CA! Home of the sane, the smart and {random}!"
       ];
-      const randomMember = member.guild.members.cache.random(); 
+      const randomMember = member.guild.members.cache.random();
       const flavor = flavors[Math.floor(Math.random() * flavors.length)];
       // result
       member.guild.systemChannel.send(greeting.replace('{name}', member.displayName) + " " + flavor.replace('{random}', randomMember.displayName));
@@ -72,5 +77,32 @@ export default class App {
         this._loggerService.log('error', `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`);
         exit(1);
       });
+  }
+
+  private async dbConnect() {
+    console.log('1');
+    return new Promise((resolve, reject) => {
+      this._db = mongoose.connection;
+
+      console.log('2');
+
+      mongoose.connect(this._configService.get('MONGODB_URI'), { useNewUrlParser: true, useUnifiedTopology: true })
+        .then(() => {
+
+          console.log('3');
+          this._db.on('error', (error) => {
+            console.log('4');
+            console.log(error);
+            reject(error)
+          });
+          this._db.once('open', () => {
+
+            console.log('4');
+            this._loggerService.log('info', 'Connected to database');
+            resolve();
+          });
+        })
+        .catch(reject)
+    });
   }
 }

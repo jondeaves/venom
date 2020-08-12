@@ -4,6 +4,7 @@ import Environment from "./Environment";
 export default interface Config {
   BOT_TRIGGER: string;
   DISCORD_BOT_TOKEN: string;
+  MONGODB_URI: string;
   ENVIRONMENT: Environment;
   LOG_LEVEL: LogLevel;
 }

@@ -33,6 +33,7 @@ export default class ConfigService {
     this.config = {
       BOT_TRIGGER: process.env.BOT_TRIGGER || '!',
       DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+      MONGODB_URI: process.env.MONGODB_URI || '',
       ENVIRONMENT: (process.env.NODE_ENV as Environment) || 'development',
       LOG_LEVEL: (process.env.LOG_LEVEL as LogLevel) || 'info',
     };
