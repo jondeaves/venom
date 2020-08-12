@@ -17,23 +17,18 @@ const command: ICommand = {
       data.push('here\'s a list of all my commands:\n');
 
       const cmds = commands.map(command => command.name);
-      var cmd;
+      let cmd;
       cmds.forEach(element => {
         cmd = commands.get(element) || commands.find(c => c.aliases && c.aliases.includes(element));
-        var response = `\`${prefix}${cmd.name}\` `;
-        if (cmd.description)
-        {
+        let response = `\`${prefix}${cmd.name}\` `;
+        if (cmd.description) {
           response += `**${cmd.description}** `;
         }
-        if (cmd.aliases)
-        {
+        if (cmd.aliases) {
           response += `\n\t\t\t*alternatively:* \`${prefix}${cmd.aliases.join(`\`, \`${prefix}`)}\``;
         }
         data.push(response);
-        if (cmd.example)
-          data.push(`\t\t\t*for example:* ${cmd.example}\n`);
-        else
-          data.push('')
+        data.push(cmd.example ? `\t\t\t*for example:* ${cmd.example}\n` : '');
       });
       data.push(`\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`);
     } else {
@@ -50,7 +45,6 @@ const command: ICommand = {
         if (command.description) data.push(`**Description:** ${command.description}`);
       }
     }
-
 
     try {
       //await message.author.send(data, { split: true });
