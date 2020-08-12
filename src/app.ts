@@ -25,7 +25,7 @@ export default class App {
 
     // Triggers once after connecting to server
     this._discordClient.once('ready', () => {
-      this._loggerService.log('info', "The Bot is connected to Discord server");
+      this._loggerService.log('info', 'The Bot is connected to Discord server');
     });
 
     // Triggers on every message the bot can see
@@ -46,7 +46,7 @@ export default class App {
       try {
         await command.execute(message, args, prefix, commandList);
       } catch (error) {
-        console.error(error);
+        this._loggerService.log('error', error.message);
         message.reply('there was an error trying to execute that command!');
       }
     });
