@@ -51,6 +51,22 @@ export default class App {
       }
     });
 
+    this._discordClient.on('guildMemberAdd', member => {
+      // base
+      const greetings = ["Hello, {name}! CA greets you!", "Welcome to CA, {name}!", "Hi {name}! Welcome to CA!"];
+      const greeting = greetings[Math.floor(Math.random() * greetings.length )];
+      // favor
+      const flavors = [
+      "As PROMISED, grab a free pie! Courtesy of {random}!", 
+      "The water is pure here! You should ask {random} for their water purified water for a sip!",
+      "Welcome to CA! Home of the sane, the smart and {random}!"
+      ];
+      const randomMember = member.guild.members.cache.random(); 
+      const flavor = flavors[Math.floor(Math.random() * flavors.length)];
+      // result
+      member.guild.systemChannel.send(greeting.replace('{name}', member.displayName) + " " + flavor.replace('{random}', randomMember.displayName));
+    });
+
     this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN'))
       .catch((reason) => {
         this._loggerService.log('error', `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`);
