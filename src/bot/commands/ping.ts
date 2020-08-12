@@ -4,7 +4,7 @@ import ICommand from './ICommand';
 const command: ICommand = {
   name: 'ping',
   aliases: ['hello', 'hi'],
-  description: 'Ping?',
+  description: 'Responds, kind of like telling you the bot is alive.',
   async execute(message: Discord.Message, args: string[]) {
     message.reply('Pong!');
   },

@@ -7,10 +7,10 @@ const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER'
 
 const command: ICommand = {
   name: 'see',
-  description: 'This command allows you to check who you are... who you __really__ are!',
   example: `\`${prefix}see\``,
+  description: 'Sends a DM telling you information about your user on given server.',
   async execute(message: Discord.Message, args: string[]) {
-    message.reply(`Server: ${message.guild.name}\nYour username: ${message.author.username}\nYour ID: ${message.author.id}`);
+    message.author.send(`Server: ${message.guild.name}\nYour username: ${message.author.username}\nYour ID: ${message.author.id}`);
   },
 };
 
