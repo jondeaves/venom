@@ -4,9 +4,9 @@ import ICommand from './ICommand';
 
 const command: ICommand = {
   name: 'see',
-  description: 'See!',
+  description: 'Sends a DM telling you information about your user on given server.',
   async execute(message: Discord.Message, args: string[]) {
-    message.reply(`Server: ${message.guild.name}\nYour username: ${message.author.username}\nYour ID: ${message.author.id}`);
+    message.author.send(`Server: ${message.guild.name}\nYour username: ${message.author.username}\nYour ID: ${message.author.id}`);
   },
 };
 

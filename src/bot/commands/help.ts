@@ -5,7 +5,7 @@ import ICommand from './ICommand';
 const command: ICommand = {
   name: 'help',
   aliases: ['commands'],
-  description: 'Lists available commands!',
+  description: 'Lists available commands.',
   async execute(message: Discord.Message, args: string[], prefix: string, commands: Collection<string, ICommand>) {
     const data = [];
 
