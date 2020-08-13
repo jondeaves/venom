@@ -17,7 +17,7 @@ const command: ICommand = {
   async execute(message: Discord.Message, args: string[], prefix?: string, commands?: Collection<string, ICommand>, dbService?: MongoService) {
     // Only certain users can use this command
     // TODO: Better handling of permissions for commands in a generic way
-    const permittedRoles = ['staff']
+    const permittedRoles = ['staff', 'mod', 'bot-devs']
     const isPermitted = message.member.roles.cache.some(r => permittedRoles.indexOf(r.name) !== -1);
 
     if (!isPermitted) {
