@@ -5,6 +5,7 @@ import container from './inversity.config';
 
 import ConfigService from './core/services/config.service';
 import LoggerService from './core/services/logger.service';
+import MongoService from './core/services/mongo.service';
 
 import ICommand from './bot/commands/ICommand';
 import rawCommands from './bot/commands';
@@ -12,10 +13,18 @@ import rawCommands from './bot/commands';
 export default class App {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
+  private _dbService: MongoService = container.resolve<MongoService>(MongoService);
 
   private _discordClient: Discord.Client;
 
   public async init(): Promise<void> {
+    try {
+      await this._dbService.connect();
+    } catch (err) {
+      this._loggerService.log('error', 'Cannot connect to database, exiting.');
+      exit(1);
+    }
+
     this._discordClient = new Discord.Client();
     const commandList = new Discord.Collection<string, ICommand>();
 
@@ -44,7 +53,7 @@ export default class App {
       };
 
       try {
-        await command.execute(message, args, prefix, commandList);
+        await command.execute(message, args, prefix, commandList, this._dbService);
       } catch (error) {
         this._loggerService.log('error', error.message);
         message.reply('there was an error trying to follow that command!');
@@ -57,11 +66,11 @@ export default class App {
       const greeting = greetings[Math.floor(Math.random() * greetings.length - 1)];
       // favor
       const flavors = [
-      "As PROMISED, grab a free pie! Courtesy of {random}!", 
-      "The water is pure here! You should ask {random} for their water purified water for a sip!",
-      "Home of the sane, the smart and {random}!"
+        "As PROMISED, grab a free pie! Courtesy of {random}!",
+        "The water is pure here! You should ask {random} for their water purified water for a sip!",
+        "Home of the sane, the smart and {random}!"
       ];
-      const randomMember = member.guild.members.cache.random(); 
+      const randomMember = member.guild.members.cache.random();
       const flavor = flavors[Math.floor(Math.random() * flavors.length - 1)];
       // result
       member.guild.systemChannel.send(greeting.replace('{name}', member.displayName) + " " + flavor.replace('{random}', randomMember.displayName));
@@ -72,5 +81,9 @@ export default class App {
         this._loggerService.log('error', `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`);
         exit(1);
       });
+  }
+
+  public exit() {
+    this._dbService.disconnect();
   }
 }
