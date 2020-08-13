@@ -85,7 +85,7 @@ export default class MongoService {
    *
    * @returns Returns matched document
    *
-   * @example findOne('123456', 'collectionName', { key: 'value' })
+   * @example find('123456', 'collectionName', { key: 'value' })
    */
   public async find(userId: string, collection: string, query: any) {
     try {
