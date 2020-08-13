@@ -15,19 +15,13 @@ const command: ICommand = {
   description: 'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
   example: `\`${prefix}addgreeting Welcome to the club {name}\``,
   async execute(message: Discord.Message, args: string[], prefix?: string, commands?: Collection<string, ICommand>, dbService?: MongoService) {
-    let isPermitted = false;
-    const permittedRoles = ['bot-devs', 'admin', 'staff']
-
-    message.guild.roles.cache.forEach(r => {
-      if (permittedRoles.indexOf(r.name) !== -1) {
-        isPermitted = true;
-      }
-    })
-
     // Only certain users can use this command
     // TODO: Better handling of permissions for commands in a generic way
+    const permittedRoles = ['staff']
+    const isPermitted = message.member.roles.cache.some(r => permittedRoles.indexOf(r.name) !== -1);
+
     if (!isPermitted) {
-      return message.reply('Sorry but I can\'t let you add greetings!');
+      return message.author.send('Sorry but I can\'t let you add greetings!');
     }
 
     // Can't do much without a message
