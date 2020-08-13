@@ -1,11 +1,11 @@
 import { exit } from 'process';
 import Discord from 'discord.js';
-import mongoose from 'mongoose';
 
 import container from './inversity.config';
 
 import ConfigService from './core/services/config.service';
 import LoggerService from './core/services/logger.service';
+import MongoService from './core/services/mongo.service';
 
 import ICommand from './bot/commands/ICommand';
 import rawCommands from './bot/commands';
@@ -13,13 +13,17 @@ import rawCommands from './bot/commands';
 export default class App {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
+  private _dbService: MongoService = container.resolve<MongoService>(MongoService);
 
   private _discordClient: Discord.Client;
-  private _db: mongoose.Connection;
 
   public async init(): Promise<void> {
-    await this.dbConnect();
-    console.log(this._db);
+    try {
+      await this._dbService.connect();
+    } catch (err) {
+      this._loggerService.log('error', 'Cannot connect to database, exiting.');
+      exit(1);
+    }
 
     this._discordClient = new Discord.Client();
     const commandList = new Discord.Collection<string, ICommand>();
@@ -49,7 +53,7 @@ export default class App {
       };
 
       try {
-        await command.execute(message, args, prefix, commandList);
+        await command.execute(message, args, prefix, commandList, this._dbService);
       } catch (error) {
         this._loggerService.log('error', error.message);
         message.reply('there was an error trying to execute that command!');
@@ -79,30 +83,7 @@ export default class App {
       });
   }
 
-  private async dbConnect() {
-    console.log('1');
-    return new Promise((resolve, reject) => {
-      this._db = mongoose.connection;
-
-      console.log('2');
-
-      mongoose.connect(this._configService.get('MONGODB_URI'), { useNewUrlParser: true, useUnifiedTopology: true })
-        .then(() => {
-
-          console.log('3');
-          this._db.on('error', (error) => {
-            console.log('4');
-            console.log(error);
-            reject(error)
-          });
-          this._db.once('open', () => {
-
-            console.log('4');
-            this._loggerService.log('info', 'Connected to database');
-            resolve();
-          });
-        })
-        .catch(reject)
-    });
+  public exit() {
+    this._dbService.disconnect();
   }
 }
