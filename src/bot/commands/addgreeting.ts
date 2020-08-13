@@ -1,13 +1,19 @@
 import Discord, { Collection } from 'discord.js';
 
 import MongoService from '../../core/services/mongo.service';
+import ConfigService from '../../core/services/config.service'
+
+import container from '../../inversity.config';
 
 import ICommand from './ICommand';
+
+const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
 
 const command: ICommand = {
   name: 'addgreeting',
   aliases: ['ag'],
-  description: 'Adds a string to the list greetings used when new users connect to server!',
+  description: 'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
+  example: `\`${prefix}addgreeting Welcome to the club {name}\``,
   async execute(message: Discord.Message, args: string[], prefix?: string, commands?: Collection<string, ICommand>, dbService?: MongoService) {
     let isPermitted = false;
     const permittedRoles = ['bot-devs', 'admin', 'staff']
