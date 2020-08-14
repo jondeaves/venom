@@ -1,0 +1,16 @@
+
+default: true
+
+# Some services use a linebreak-sensitive renderer, e.g. GitHub comment and BitBucket
+line-length: false
+
+# This project needs to be able to document a code block with a space
+no-space-in-code: false
+
+no-trailing-punctuation:
+  # Allow headings to end with question mark for FAQ
+  punctuation: ".,;:"
+
+# Prettier handles these:
+list-marker-space: false
+no-multiple-blanks: false

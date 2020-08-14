@@ -1,10 +1,10 @@
-import path from 'path';
 import dotenv from 'dotenv';
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
+import path from 'path';
 
 import Config from '../types/Config';
-import LogLevel from '../types/LogLevel';
 import Environment from '../types/Environment';
+import LogLevel from '../types/LogLevel';
 
 @injectable()
 export default class ConfigService {
@@ -21,12 +21,9 @@ export default class ConfigService {
   }
 
   constructor() {
-    this.load();
-    this.setup();
-  }
-
-  private load(): void {
     dotenv.config({ path: path.resolve(__dirname, '../../', '.env') });
+
+    this.setup();
   }
 
   private setup(): void {
@@ -40,7 +37,7 @@ export default class ConfigService {
     };
   }
 
-  public get(key: keyof Config): any {
+  public get(key: keyof Config): string {
     return this.config[key];
   }
 }

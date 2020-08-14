@@ -1,5 +1,5 @@
-import LogLevel from "./LogLevel";
-import Environment from "./Environment";
+import Environment from './Environment';
+import LogLevel from './LogLevel';
 
 export default interface Config {
   BOT_TRIGGER: string;

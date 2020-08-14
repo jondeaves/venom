@@ -1,18 +1,21 @@
-import mongodb from 'mongodb';
-import { injectable } from "inversify";
-import assert from 'assert';
+import { injectable } from 'inversify';
+import mongodb, { Collection, CollectionInsertOneOptions } from 'mongodb';
 
+// eslint-disable-next-line import/no-cycle
 import container from '../../inversity.config';
 
 import ConfigService from './config.service';
+// eslint-disable-next-line import/no-cycle
 import LoggerService from './logger.service';
 
 @injectable()
 export default class MongoService {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
+
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
 
   private _mongoClient: mongodb.MongoClient;
+
   public _db: mongodb.Db;
 
   public async connect(): Promise<void> {
@@ -34,7 +37,7 @@ export default class MongoService {
     });
   }
 
-  public disconnect() {
+  public disconnect(): void {
     if (this._mongoClient && this._mongoClient.isConnected) {
       this._loggerService.log('info', 'Closing connection to MongoDB');
       this._mongoClient.close();
@@ -51,7 +54,7 @@ export default class MongoService {
    *
    * @example findOne('123456', 'collectionName', { ident: 'generated-slug' })
    */
-  public async findOne(userId: string, collection: string, query: any) {
+  public async findOne(userId: string, collection: string, query: unknown): Promise<Collection | boolean> {
     try {
       this.verifyConnection();
 
@@ -65,10 +68,10 @@ export default class MongoService {
       });
 
       return resp;
-    } catch (err) {
+    } catch (error) {
       this._loggerService.log('error', 'Could not find document', {
         userId,
-        error: err,
+        error,
         collection,
         query,
       });
@@ -87,7 +90,7 @@ export default class MongoService {
    *
    * @example find('123456', 'collectionName', { key: 'value' })
    */
-  public async find(userId: string, collection: string, query: any) {
+  public async find(userId: string, collection: string, query: unknown): Promise<Collection[]> {
     try {
       this.verifyConnection();
 
@@ -101,10 +104,10 @@ export default class MongoService {
       });
 
       return resp;
-    } catch (err) {
+    } catch (error) {
       this._loggerService.log('error', 'Could not find documents', {
         userId,
-        error: err,
+        error,
         collection,
         query,
       });
@@ -123,7 +126,7 @@ export default class MongoService {
    *
    * @example `insert('123456', 'collectionName', [{ body: 'This is a document!' }])`
    */
-  public async insert(userId: string, collection: string, payload: any[]) {
+  public async insert(userId: string, collection: string, payload: unknown[]): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -137,16 +140,16 @@ export default class MongoService {
         userId,
         collection,
         payload,
-        resp
+        resp,
       });
 
       return true;
-    } catch (err) {
+    } catch (error) {
       this._loggerService.log('error', 'Could not insert documents to database', {
         userId,
-        error: err,
+        error,
         collection,
-        payload
+        payload,
       });
 
       return false;
@@ -164,7 +167,7 @@ export default class MongoService {
    *
    * @example `updateMany('123456', 'collectionName', { ident: 'generated-slug' }, { secondKey: 'new data'})`
    */
-  public async updateMany(userId: string, collection: string, query: any, payload: any) {
+  public async updateMany(userId: string, collection: string, query: unknown, payload: unknown[]): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -179,18 +182,20 @@ export default class MongoService {
         collection,
         query,
         payload,
-        resp
+        resp,
       });
 
       return true;
-    } catch (err) {
+    } catch (error) {
       this._loggerService.log('error', 'Could not update documents', {
         userId,
         collection,
         query,
         payload,
-        err
+        error,
       });
+
+      return false;
     }
   }
 
@@ -204,7 +209,7 @@ export default class MongoService {
    *
    * @example `deleteMany('123456', 'collectionName', { ident: 'generated-slug' })`
    */
-  public async deleteMany(userId: string, collection: string, query: any) {
+  public async deleteMany(userId: string, collection: string, query: unknown): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -218,23 +223,23 @@ export default class MongoService {
         userId,
         collection,
         query,
-        resp
+        resp,
       });
 
       return true;
-    } catch (err) {
+    } catch (error) {
       this._loggerService.log('error', 'Could not delete documents', {
         userId,
         collection,
         query,
-        err
+        error,
       });
 
-      return false
+      return false;
     }
   }
 
-  private verifyConnection() {
+  private verifyConnection(): void {
     if (!this._mongoClient.isConnected) {
       this._loggerService.log('error', 'No database connection available');
       throw new Error('No database connection available');

@@ -1,9 +1,10 @@
+import { injectable } from 'inversify';
 import path from 'path';
 import winston from 'winston';
-import { injectable } from 'inversify';
 
-import LogLevel from '../types/LogLevel';
+// eslint-disable-next-line import/no-cycle
 import container from '../../inversity.config';
+import LogLevel from '../types/LogLevel';
 
 import ConfigService from './config.service';
 
@@ -18,7 +19,10 @@ export default class LoggerService {
       level: this._configService.get('LOG_LEVEL'),
       format: winston.format.json(),
       transports: [
-        new winston.transports.File({ filename: path.resolve(__dirname, '../../', 'logs', 'error.log'), level: 'error' }),
+        new winston.transports.File({
+          filename: path.resolve(__dirname, '../../', 'logs', 'error.log'),
+          level: 'error',
+        }),
         new winston.transports.Console({
           format: winston.format.simple(),
         }),
@@ -26,7 +30,7 @@ export default class LoggerService {
     });
   }
 
-  log(level: LogLevel, message: string, payload?: object) {
+  log(level: LogLevel, message: string, payload?: unknown): void {
     if (this._logger[level]) {
       this._logger.log(level, message, payload);
     } else {
