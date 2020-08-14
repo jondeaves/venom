@@ -15,7 +15,7 @@
     "start": "node dist/main.js",
     "start:dev": "nodemon",
     "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec --retries 3 --require 'node_modules/reflect-metadata/Reflect.js' --exit",
-    "lint": "run-p lint:code lint:markdown",
+    "lint": "lint:code",
     "lint:code": "eslint src/**/*.{ts,js}",
     "lint:markdown": "markdownlint **/*.md",
     "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write",
@@ -46,6 +46,8 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chalk": "^4.1.0",
+    "commitlint": "^9.1.0",
+    "@commitlint/config-conventional": "^9.1.1",
     "eslint": "^7.6.0",
     "eslint-config-airbnb-typescript": "^9.0.0",
     "eslint-config-prettier": "^6.11.0",
@@ -74,17 +76,15 @@
     "typescript": "~3.9.7"
   },
   "husky": {
-    "scripts": {
-      "commit-msg": "./scripts/commit-msg $1",
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
       "pre-commit": "./node_modules/.bin/lint-staged"
     }
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [
       "yarn format",
-      "yarn lint:code",
-      "yarn lint:markdown",
-      "git add"
+      "yarn lint:code"
     ]
   },
   "engines": {
