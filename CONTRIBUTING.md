@@ -172,7 +172,6 @@ Must be one of the following:
 - **chore**: Changes to the build process or auxiliary tools and libraries such as documentation
   generation
 - **misc**: Changes that don't quite fit into other categories but are worth mentioning in the CHANGELOG - use sparingly.
-- **platform**: For changes to the code base in general.
 
 ### Subject
 
