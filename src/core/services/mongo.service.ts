@@ -54,11 +54,7 @@ export default class MongoService {
    *
    * @example findOne('123456', 'collectionName', { ident: 'generated-slug' })
    */
-  public async findOne(
-    userId: string,
-    collection: string,
-    query: mongodb.FilterQuery<number | string | boolean>,
-  ): Promise<Collection | boolean> {
+  public async findOne(userId: string, collection: string, query: unknown): Promise<Collection | boolean> {
     try {
       this.verifyConnection();
 
@@ -94,11 +90,7 @@ export default class MongoService {
    *
    * @example find('123456', 'collectionName', { key: 'value' })
    */
-  public async find(
-    userId: string,
-    collection: string,
-    query: mongodb.FilterQuery<number | string | boolean>,
-  ): Promise<Collection[]> {
+  public async find(userId: string, collection: string, query: unknown): Promise<Collection[]> {
     try {
       this.verifyConnection();
 
@@ -175,12 +167,7 @@ export default class MongoService {
    *
    * @example `updateMany('123456', 'collectionName', { ident: 'generated-slug' }, { secondKey: 'new data'})`
    */
-  public async updateMany(
-    userId: string,
-    collection: string,
-    query: mongodb.FilterQuery<number | string | boolean>,
-    payload: unknown[],
-  ): Promise<boolean> {
+  public async updateMany(userId: string, collection: string, query: unknown, payload: unknown[]): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -222,11 +209,7 @@ export default class MongoService {
    *
    * @example `deleteMany('123456', 'collectionName', { ident: 'generated-slug' })`
    */
-  public async deleteMany(
-    userId: string,
-    collection: string,
-    query: mongodb.FilterQuery<number | string | boolean>,
-  ): Promise<boolean> {
+  public async deleteMany(userId: string, collection: string, query: unknown): Promise<boolean> {
     try {
       this.verifyConnection();
 
