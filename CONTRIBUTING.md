@@ -5,6 +5,7 @@ First off, thanks for taking the time to contribute! ❤️
 All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions. 🎉
 
 <!-- omit in toc -->
+
 ## Table of Contents
 
 - [I Have a Question](#i-have-a-question)
@@ -16,8 +17,6 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [Styleguides](#styleguides)
 - [Commit Messages](#commit-messages)
 - [Join The Project Team](#join-the-project-team)
-
-
 
 ## I Have a Question
 
@@ -79,7 +78,7 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 - Open an [Issue](https://github.com/jondeaves/venom/issues/new). (Since we can't be sure at this point whether it is a bug or not, we ask you not to label the issue.)
 - Fill in as much of the template as possible. In particular;
 - Explain the behavior you would expect and the actual behavior.
-- Please provide as much context as possible and describe the *reproduction steps* that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
+- Please provide as much context as possible and describe the _reproduction steps_ that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
 - Provide the information you collected in the previous section.
 
 Once it's filed:
@@ -87,7 +86,6 @@ Once it's filed:
 - The project team will triage the issue accordingly.
 - A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `needs-detail`. Bugs with the `needs-detail` tag will not be addressed until they have more information added.
 - If the team is able to reproduce the issue, it will be moved onto the project board and will be picked up by a project member.
-
 
 ### Suggesting Enhancements
 
@@ -117,6 +115,18 @@ There are a few steps a developer can take to make contributing to this project 
 - The project requires Node (We recommend the latest LTS) and Yarn.
 - You can reference the [README.md](README.md) for steps to get the project running.
 
+#### VSCode
+
+If you are using VSCode then we recommend installing the ESLint and Prettier plugins and you can use the below configuration in `.vscode/settings.json` to have Prettier auto-format code for you.
+
+```json
+{
+  "eslint.packageManager": "yarn",
+  "javascript.format.enable": false,
+  "editor.formatOnSave": true
+}
+```
+
 ### Improving The Documentation
 
 If your change adds new features, configuration options or anything else that may require relevant documentation then it is important that those updates are done as part of your work. It is important that anything that goes into the main branch is complete, documented and usable by others.
@@ -127,7 +137,7 @@ We follow [Angular's Commit Conventions](https://docs.google.com/document/d/1QrD
 
 ### Commit Message Format
 
-Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
+Each commit message consists of a **header**, a **body** and a **footer**. The header has a special
 format that includes a **type**, a **scope** and a **subject**:
 
 ```txt
@@ -183,7 +193,6 @@ The footer should contain any information about **Breaking Changes** and is also
 reference GitHub issues that this commit **Closes**.
 
 **Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
-
 
 ## Attribution
 
