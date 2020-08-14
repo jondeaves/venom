@@ -81,11 +81,11 @@ export default class App {
       );
     });
 
-    this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN')).catch(error => {
+    this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN')).catch((error) => {
       this._loggerService.log(
         'error',
         `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`,
-        { error }
+        { error },
       );
       exit(1);
     });

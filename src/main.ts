@@ -5,7 +5,6 @@ import App from './app';
 
 const app = new App();
 
-
 function exitHandler(): void {
   // Cleans up the application
   app.exit();
