@@ -27,13 +27,17 @@ The best way to test new work is to add the test bot you created above to a diff
 
 ## MongoDB Instance
 
-The bot uses MongoDB to store it's data, as a consequence of this you will need to have your own instance of MongoDB if you wish to run the bot yourself. If you don't want to install an instance on your own machine then we can recommend [mLab](https://mlab.com/), as this will be as close to the production version as possible.
+The bot uses MongoDB to store it's data, as a consequence of this you will need to have your own instance of MongoDB if you wish to run the bot yourself. If you don't want to install an instance on your own machine then we can recommend [mLab](https://mlab.com/), as this will be as close to the production version as possible and is free.
+
+## Postgres Instance
+
+The bot uses Postgres to store more structured data, as a consequence of this you will need to have your own instance of Postgres if you wish to run the bot yourself. If you don't want to install an instance on your own machine then we can recommend [ElephantSQL](elephantsql.com), as this will be as close to the production version as possible and is free.
 
 ## Final thoughts
 
 Once the above has been completed you can then run your bot locally, ensuring you set the values in `src/.env` to match those provided throughtout the steps above. You may also wish to set the following values.
 
-- Set `BOT_TRIGGER` to `venom test ` or something similarly unique. Ensuring you don't confuse your bot with another.
+- Set `BOT_TRIGGER` to `venom test` or something similarly unique. Ensuring you don't confuse your bot with another.
 - Set `LOG_LEVEL` to `verbose` to see all possible log information.
 - Set `ENVIRONMENT` to `development`.
 - As mentioned above, set `DISCORD_BOT_TOKEN` to the value taken from the "Bot" tab of the Discord developer Application.

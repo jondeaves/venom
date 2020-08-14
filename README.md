@@ -37,6 +37,7 @@ At a minimum you need to provide the Discord bots Token (which can be found on t
 | LOG_LEVEL         | What level of logs should be displayed in console                                                 | `error`, `warn`, `info`, `verbose`, `debug` or `silly` |
 | MONGODB_URI       | Full connection string for MongoDB database, include db_name if user is scoped to single database | mongodb://user:password@localhost:27017/venom_db       |
 | MONGODB_DB_NAME   | The name of the database to use for this project                                                  | venom_db                                               |
+| POSTGRES_DB_URI   | Full connection string for Postgres database                                                      | postgres://user:password@localhost:5432/db_name        |
 
 ### Bot commands
 

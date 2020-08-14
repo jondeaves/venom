@@ -24,6 +24,7 @@ export default class ConfigService {
       DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
       MONGODB_URI: process.env.MONGODB_URI || '',
       MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || '',
+      POSTGRES_DB_URI: process.env.POSTGRES_DB_URI || '',
       NODE_ENV: (process.env.NODE_ENV as Environment) || 'development',
       LOG_LEVEL: (process.env.LOG_LEVEL as LogLevel) || 'info',
     };

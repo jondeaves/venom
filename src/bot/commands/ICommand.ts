@@ -1,6 +1,7 @@
 import Discord, { Collection } from 'discord.js';
 
 import MongoService from '../../core/services/mongo.service';
+import DatabaseService from '../../core/services/database.service';
 
 export default interface ICommand {
   name: string;
@@ -12,6 +13,7 @@ export default interface ICommand {
     args: string[],
     prefix?: string,
     commands?: Collection<string, ICommand>,
-    dbService?: MongoService,
+    mongoService?: MongoService,
+    databaseService?: DatabaseService,
   ) => Promise<Discord.Message>;
 }

@@ -4,6 +4,7 @@ import { exit } from 'process';
 import container from './inversity.config';
 
 import ConfigService from './core/services/config.service';
+import DatabaseService from './core/services/database.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
 
@@ -15,13 +16,16 @@ export default class App {
 
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
 
-  private _dbService: MongoService = container.resolve<MongoService>(MongoService);
+  private _mongoService: MongoService = container.resolve<MongoService>(MongoService);
+
+  private _databaseService: DatabaseService = container.resolve<DatabaseService>(DatabaseService);
 
   private _discordClient: Discord.Client;
 
   public async init(): Promise<void> {
     try {
-      await this._dbService.connect();
+      await this._mongoService.connect();
+      await this._databaseService.connect();
     } catch (error) {
       this._loggerService.log('error', 'Cannot connect to database, exiting.', { error });
       exit(1);
@@ -55,7 +59,7 @@ export default class App {
         message.reply("looks like I haven't learned that trick yet!");
       } else {
         try {
-          await command.execute(message, args, prefix, commandList, this._dbService);
+          await command.execute(message, args, prefix, commandList, this._mongoService, this._databaseService);
         } catch (error) {
           this._loggerService.log('error', error.message);
           message.reply('there was an error trying to follow that command!');
@@ -92,6 +96,7 @@ export default class App {
   }
 
   public exit(): void {
-    this._dbService.disconnect();
+    this._mongoService.disconnect();
+    this._databaseService.disconnect();
   }
 }
