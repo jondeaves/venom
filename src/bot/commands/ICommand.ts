@@ -13,5 +13,5 @@ export default interface ICommand {
     prefix?: string,
     commands?: Collection<string, ICommand>,
     dbService?: MongoService,
-  ) => Promise<Discord.Message>;
+  ) => Promise<void | Discord.Message>;
 }
