@@ -31,8 +31,9 @@ At a minimum you need to provide the Discord bots Token (which can be found on t
 
 | key               | description                                                                                       | example                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| BOT_TRIGGER       | Prefix of message to let bot know you are speaking to it                                          |
-| DISCORD_BOT_TOKEN | Discord bots Token                                                                                |
+| BOT_TRIGGER       | Prefix of message to let bot know you are speaking to it                                          | !                                                      |
+| CAMPAIGN_TRIGGER  | Prefix of message to let bot know people are playign campaign                                     | >                                                      |
+| DISCORD_BOT_TOKEN | Discord bots Token                                                                                |                                                        |
 | NODE_ENV          | What environment the bot is running in                                                            | `production`, `development` or `test`                  |
 | LOG_LEVEL         | What level of logs should be displayed in console                                                 | `error`, `warn`, `info`, `verbose`, `debug` or `silly` |
 | MONGODB_URI       | Full connection string for MongoDB database, include db_name if user is scoped to single database | mongodb://user:password@localhost:27017/venom_db       |

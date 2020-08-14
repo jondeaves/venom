@@ -1,5 +1,6 @@
-import Discord from 'discord.js';
+import Discord, { Message } from 'discord.js';
 import { exit } from 'process';
+import { getRepository } from 'typeorm';
 
 import container from './inversity.config';
 
@@ -7,6 +8,9 @@ import ConfigService from './core/services/config.service';
 import DatabaseService from './core/services/database.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
+
+import CampaignManager from './carp/CampaignManager';
+import Campaign from './carp/campaign/campaign.entity';
 
 import rawCommands from './bot/commands';
 import ICommand from './bot/commands/ICommand';
@@ -45,24 +49,11 @@ export default class App {
 
     // Triggers on every message the bot can see
     this._discordClient.on('message', async (message) => {
-      const prefix = this._configService.get('BOT_TRIGGER');
+      if (!message.author.bot) {
+        const isRPG = await this.handleRPG(message);
 
-      // If the message either doesn't start with the prefix or was sent by a bot, exit early.
-      if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
-
-      const args = message.content.slice(prefix.length).trim().split(/ +/);
-      const commandName = args.shift().toLowerCase();
-      const command =
-        commandList.get(commandName) || commandList.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
-
-      if (!command) {
-        message.reply("looks like I haven't learned that trick yet!");
-      } else {
-        try {
-          await command.execute(message, args, prefix, commandList, this._mongoService, this._databaseService);
-        } catch (error) {
-          this._loggerService.log('error', error.message);
-          message.reply('there was an error trying to follow that command!');
+        if (!isRPG) {
+          this.handleBot(message, commandList);
         }
       }
     });
@@ -98,5 +89,58 @@ export default class App {
   public exit(): void {
     this._mongoService.disconnect();
     this._databaseService.disconnect();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private async handleRPG(message: Message): Promise<boolean> {
+    // Check if this is for an rpg campaign first
+    const campaignRepository = getRepository(Campaign);
+
+    const result = await campaignRepository.find({
+      where: { roomId: message.channel.id },
+      relations: ['characters'],
+    });
+
+    if (!result || result.length === 0) {
+      return false;
+    }
+
+    const campaign = result[0];
+    const matchedChar = campaign.characters.findIndex((char) => char.uid === message.author.id);
+
+    if (matchedChar === -1) {
+      // TODO: Add name of campaign so user knows what bot is talking about
+      message.author.send('You are not a member of the campaign you tried to interact with');
+    } else {
+      // Pass through to campaign manager
+      const campaignManager = new CampaignManager(this._databaseService, this._discordClient, campaign);
+
+      await campaignManager.execute(message);
+    }
+
+    return true;
+  }
+
+  private async handleBot(message: Message, commandList: Discord.Collection<string, ICommand>): Promise<void> {
+    const prefix = this._configService.get('BOT_TRIGGER');
+
+    // If the message either doesn't start with the prefix or was sent by a bot, exit early.
+    if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    const command =
+      commandList.get(commandName) || commandList.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
+
+    if (!command) {
+      message.reply("looks like I haven't learned that trick yet!");
+    } else {
+      try {
+        await command.execute(message, args, prefix, commandList, this._mongoService, this._databaseService);
+      } catch (error) {
+        this._loggerService.log('error', error.message);
+        message.reply('there was an error trying to follow that command!');
+      }
+    }
   }
 }

@@ -21,6 +21,7 @@ export default class ConfigService {
   constructor() {
     this.config = {
       BOT_TRIGGER: process.env.BOT_TRIGGER || '!',
+      CAMPAIGN_TRIGGER: process.env.CAMPAIGN_TRIGGER || '>',
       DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
       MONGODB_URI: process.env.MONGODB_URI || '',
       MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || '',

@@ -13,26 +13,37 @@ export default async function seedCharacters(connection: Connection): Promise<Ch
     // Clear our data
     await connection.manager.query('TRUNCATE TABLE "character" CASCADE;');
 
-    const character = new Character();
-    // Discord id looks to be a 16 character number, so let's fake it
-    character.uid = faker.random
-      .number({
-        min: 1000000000000000,
-        max: 1999999999999999,
-      })
-      .toString();
-    character.name = 'Urthedak';
+    const char1 = await generateCharacter(connection, 'Urthedak');
+    const char2 = await generateCharacter(connection, 'Alithana');
 
-    // Save data
-    const newCharacter = await connection.manager.save(character);
+    const characters = [char1, char2];
 
-    logSeedOutput('Character', newCharacter);
-
-    return [newCharacter];
+    return characters;
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
 
     return [];
   }
+}
+
+async function generateCharacter(connection: Connection, name: string, uid?: string): Promise<Character> {
+  const character = new Character();
+  // Discord id looks to be a 16 character number, so let's fake it
+  character.uid =
+    uid ||
+    faker.random
+      .number({
+        min: 1000000000000000,
+        max: 1999999999999999,
+      })
+      .toString();
+  character.name = name;
+
+  // Save data
+  const newCharacter = await connection.manager.save(character);
+
+  logSeedOutput('Character', newCharacter);
+
+  return newCharacter;
 }
