@@ -1,6 +1,6 @@
-import mongodb from 'mongodb';
-import { injectable } from 'inversify';
 import assert from 'assert';
+import { injectable } from 'inversify';
+import mongodb from 'mongodb';
 
 import container from '../../inversity.config';
 

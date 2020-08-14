@@ -1,9 +1,9 @@
+import { injectable } from 'inversify';
 import path from 'path';
 import winston from 'winston';
-import { injectable } from 'inversify';
 
-import LogLevel from '../types/LogLevel';
 import container from '../../inversity.config';
+import LogLevel from '../types/LogLevel';
 
 import ConfigService from './config.service';
 

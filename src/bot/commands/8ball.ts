@@ -7,7 +7,7 @@ const command: ICommand = {
   aliases: ['eightball', 'magicball', 'ball', 'wisdomball'],
   description: 'Ask the magic eightball for advice!',
   async execute(message: Discord.Message, args: string[]) {
-    if (args.length == 0) {
+    if (args.length === 0) {
       message.reply("where's the question?");
     } else {
       const responses = [

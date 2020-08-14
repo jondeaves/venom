@@ -1,10 +1,10 @@
-import path from 'path';
 import dotenv from 'dotenv';
 import { injectable } from 'inversify';
+import path from 'path';
 
 import Config from '../types/Config';
-import LogLevel from '../types/LogLevel';
 import Environment from '../types/Environment';
+import LogLevel from '../types/LogLevel';
 
 @injectable()
 export default class ConfigService {

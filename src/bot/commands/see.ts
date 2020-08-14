@@ -1,8 +1,10 @@
 import Discord from 'discord.js';
 
-import ICommand from './ICommand';
 import ConfigService from '../../core/services/config.service';
 import container from '../../inversity.config';
+
+import ICommand from './ICommand';
+
 const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
 
 const command: ICommand = {

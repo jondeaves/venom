@@ -1,7 +1,7 @@
 import Discord, { Collection } from 'discord.js';
 
-import MongoService from '../../core/services/mongo.service';
 import ConfigService from '../../core/services/config.service';
+import MongoService from '../../core/services/mongo.service';
 
 import container from '../../inversity.config';
 
@@ -18,8 +18,8 @@ const command: ICommand = {
   async execute(
     message: Discord.Message,
     args: string[],
-    prefix?: string,
-    commands?: Collection<string, ICommand>,
+    _prefix?: string,
+    _commands?: Collection<string, ICommand>,
     dbService?: MongoService,
   ) {
     // Only certain users can use this command

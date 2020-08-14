@@ -1,16 +1,36 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:latest", "tslint-react", "tslint-config-prettier"],
+  "extends": [
+    "tslint:latest",
+    "tslint-react",
+    "tslint-config-prettier"
+  ],
   "jsRules": {},
   "rules": {
     "interface-name": false,
-    "semicolon": [true, "always"],
-    "member-access": [false],
-    "ordered-imports": [true],
-    "no-console": [false],
+    "semicolon": [
+      true,
+      "always"
+    ],
+    "member-access": [
+      false
+    ],
+    "ordered-imports": [
+      true
+    ],
+    "no-console": [
+      false
+    ],
     "no-var-requires": true,
-    "quotemark": [true, "single", "jsx-double"],
-    "no-implicit-dependencies": [true, "dev"]
+    "quotemark": [
+      true,
+      "single",
+      "avoid-escape"
+    ],
+    "no-implicit-dependencies": [
+      true,
+      "dev"
+    ]
   },
   "rulesDirectory": []
 }

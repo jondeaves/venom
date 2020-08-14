@@ -1,5 +1,5 @@
-import { exit } from 'process';
 import Discord from 'discord.js';
+import { exit } from 'process';
 
 import container from './inversity.config';
 
@@ -7,8 +7,8 @@ import ConfigService from './core/services/config.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
 
-import ICommand from './bot/commands/ICommand';
 import rawCommands from './bot/commands';
+import ICommand from './bot/commands/ICommand';
 
 export default class App {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);

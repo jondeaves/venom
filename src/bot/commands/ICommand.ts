@@ -1,5 +1,6 @@
 import Discord, { Collection } from 'discord.js';
-import MongoService from 'src/core/services/mongo.service';
+
+import MongoService from '../../core/services/mongo.service';
 
 export default interface ICommand {
   name: string;
