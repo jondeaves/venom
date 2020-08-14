@@ -42,7 +42,7 @@ export default class App {
       const prefix = this._configService.get('BOT_TRIGGER');
 
       // If the message either doesn't start with the prefix or was sent by a bot, exit early.
-      if (!message.content.startsWith(prefix) || message.author.bot) return;
+      if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
 
       const args = message.content.slice(prefix.length).trim().split(/ +/);
       const commandName = args.shift().toLowerCase();
