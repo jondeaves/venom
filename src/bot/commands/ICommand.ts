@@ -6,5 +6,11 @@ export default interface ICommand {
   aliases?: string[];
   description: string;
   example?: string;
-  execute: (message: Discord.Message, args: string[], prefix?: string, commands?: Collection<string, ICommand>, dbService?: MongoService) => Promise<any>,
+  execute: (
+    message: Discord.Message,
+    args: string[],
+    prefix?: string,
+    commands?: Collection<string, ICommand>,
+    dbService?: MongoService,
+  ) => Promise<any>;
 }

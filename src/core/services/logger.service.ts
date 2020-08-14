@@ -18,7 +18,10 @@ export default class LoggerService {
       level: this._configService.get('LOG_LEVEL'),
       format: winston.format.json(),
       transports: [
-        new winston.transports.File({ filename: path.resolve(__dirname, '../../', 'logs', 'error.log'), level: 'error' }),
+        new winston.transports.File({
+          filename: path.resolve(__dirname, '../../', 'logs', 'error.log'),
+          level: 'error',
+        }),
         new winston.transports.Console({
           format: winston.format.simple(),
         }),

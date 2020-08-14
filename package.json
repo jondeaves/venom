@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
-    "start:dev": "nodemon"
+    "start:dev": "nodemon",
+    "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write && git status"
   },
   "dependencies": {
     "discord.js": "~12.2.0",

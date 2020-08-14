@@ -1,5 +1,5 @@
 import mongodb from 'mongodb';
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
 import assert from 'assert';
 
 import container from '../../inversity.config';
@@ -137,7 +137,7 @@ export default class MongoService {
         userId,
         collection,
         payload,
-        resp
+        resp,
       });
 
       return true;
@@ -146,7 +146,7 @@ export default class MongoService {
         userId,
         error: err,
         collection,
-        payload
+        payload,
       });
 
       return false;
@@ -179,7 +179,7 @@ export default class MongoService {
         collection,
         query,
         payload,
-        resp
+        resp,
       });
 
       return true;
@@ -189,7 +189,7 @@ export default class MongoService {
         collection,
         query,
         payload,
-        err
+        err,
       });
     }
   }
@@ -218,7 +218,7 @@ export default class MongoService {
         userId,
         collection,
         query,
-        resp
+        resp,
       });
 
       return true;
@@ -227,10 +227,10 @@ export default class MongoService {
         userId,
         collection,
         query,
-        err
+        err,
       });
 
-      return false
+      return false;
     }
   }
 

@@ -1,6 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
 
 import Config from '../types/Config';
 import LogLevel from '../types/LogLevel';
