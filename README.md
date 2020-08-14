@@ -5,11 +5,12 @@ This is the Discord bot for Creation Asylum.
 ## Development
 
 - Requires [NodeJS](https://nodejs.org/), recommend at least the latest LTS version.
-- Run `yarn` or `npm install` to install dependencies
+- Requires [Yarn](https://classic.yarnpkg.com/lang/en/), recommend latest stable 1.x
+- Run `yarn` to install dependencies
 
 ### Environment Variables
 
-At a minimum you need to provide the Discord bots Token, which can be found on the Bot tab of a Discord application. See table below for possible values.
+At a minimum you need to provide the Discord bots Token (which can be found on the Bot tab of a Discord application), MONGODB_URI and MONGODB_DB_NAME values. See table below for possible values.
 
 | key | description | example |
 |-------------------|-------------|---------|
@@ -22,4 +23,4 @@ At a minimum you need to provide the Discord bots Token, which can be found on t
 
 ### Bot commands
 
-To add a command you create a Typescript file in `src/bot/commands/[filename].ts` and ensure it implements the \src/bot/commands/ICommand.ts` interface. You can see the other files in this directory for implementation examples. Also ensure you export this file in `src/bot/commands/index.ts`.
+To add a command you create a Typescript file in `src/bot/commands/[filename].ts` and ensure it implements the `src/bot/commands/ICommand.ts` interface. You can see the other files in this directory for implementation examples. Also ensure you export this file in `src/bot/commands/index.ts`.

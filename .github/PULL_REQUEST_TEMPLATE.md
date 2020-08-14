@@ -2,14 +2,15 @@
 
 <!-- PR Context:
 A quick overview of the "why" of this PR to help reviewers
-If applicable, provide links to GitHub tickets
+If applicable, provide links to GitHub issues
 -->
-[GitHub Ticket](https://github.com/jondeaves/venom/issues/XXX)
+[GitHub Issue](https://github.com/jondeaves/venom/issues/XXX)
 
 ## Description
 
 <!-- Description of PR:
-List of bullet points and screenshots are appreciated
+List of bullet points are appreciated
+If adding new features to the bot then screenshots of the interactions with your own test bot would be very helpful
 If applicable, have you thought of updating existing docs or
 create a new one?
 -->
