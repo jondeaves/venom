@@ -6,6 +6,6 @@ export default interface Config {
   DISCORD_BOT_TOKEN: string;
   MONGODB_URI: string;
   MONGODB_DB_NAME: string;
-  ENVIRONMENT: Environment;
+  NODE_ENV: Environment;
   LOG_LEVEL: LogLevel;
 }

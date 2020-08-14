@@ -1,4 +1,7 @@
+import dotenv from 'dotenv';
 import { exit } from 'process';
+import path from 'path';
+
 import 'reflect-metadata';
 
 import App from './app';
@@ -12,6 +15,8 @@ function exitHandler(): void {
 }
 
 try {
+  dotenv.config({ path: path.resolve(__dirname, './', '.env') });
+
   app.init();
 
   // do something when app is closing
