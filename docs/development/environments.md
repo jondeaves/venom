@@ -32,6 +32,7 @@ The bot uses MongoDB to store it's data, as a consequence of this you will need 
 ## Final thoughts
 
 Once the above has been completed you can then run your bot locally, ensuring you set the values in `src/.env` to match those provided throughtout the steps above. You may also wish to set the following values.
+
 - Set `BOT_TRIGGER` to `venom test ` or something similarly unique. Ensuring you don't confuse your bot with another.
 - Set `LOG_LEVEL` to `verbose` to see all possible log information.
 - Set `ENVIRONMENT` to `development`.

@@ -12,7 +12,9 @@ import ICommand from './bot/commands/ICommand';
 
 export default class App {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
+
   private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
+
   private _dbService: MongoService = container.resolve<MongoService>(MongoService);
 
   private _discordClient: Discord.Client;
@@ -20,8 +22,8 @@ export default class App {
   public async init(): Promise<void> {
     try {
       await this._dbService.connect();
-    } catch (err) {
-      this._loggerService.log('error', 'Cannot connect to database, exiting.');
+    } catch (error) {
+      this._loggerService.log('error', 'Cannot connect to database, exiting.', { error });
       exit(1);
     }
 
@@ -50,14 +52,14 @@ export default class App {
         commandList.get(commandName) || commandList.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
 
       if (!command) {
-        return message.reply("looks like I haven't learned that trick yet!");
-      }
-
-      try {
-        await command.execute(message, args, prefix, commandList, this._dbService);
-      } catch (error) {
-        this._loggerService.log('error', error.message);
-        message.reply('there was an error trying to follow that command!');
+        message.reply("looks like I haven't learned that trick yet!");
+      } else {
+        try {
+          await command.execute(message, args, prefix, commandList, this._dbService);
+        } catch (error) {
+          this._loggerService.log('error', error.message);
+          message.reply('there was an error trying to follow that command!');
+        }
       }
     });
 
@@ -75,20 +77,21 @@ export default class App {
       const flavor = flavors[Math.floor(Math.random() * flavors.length - 1)];
       // result
       member.guild.systemChannel.send(
-        greeting.replace('{name}', member.displayName) + ' ' + flavor.replace('{random}', randomMember.displayName),
+        `${greeting.replace('{name}', member.displayName)} ${flavor.replace('{random}', randomMember.displayName)}`,
       );
     });
 
-    this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN')).catch((reason) => {
+    this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN')).catch(error => {
       this._loggerService.log(
         'error',
         `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`,
+        { error }
       );
       exit(1);
     });
   }
 
-  public exit() {
+  public exit(): void {
     this._dbService.disconnect();
   }
 }

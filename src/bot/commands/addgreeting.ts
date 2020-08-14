@@ -24,8 +24,8 @@ const command: ICommand = {
   ) {
     // Only certain users can use this command
     // TODO: Better handling of permissions for commands in a generic way
-    const permittedRoles = ['staff', 'mod', 'bot-devs'];
-    const isPermitted = message.member.roles.cache.some((r) => permittedRoles.indexOf(r.name) !== -1);
+    const permittedRoles = new Set(['staff', 'mod', 'bot-devs']);
+    const isPermitted = message.member.roles.cache.some((r) => permittedRoles.has(r.name));
 
     if (!isPermitted) {
       return message.author.send("Sorry but I can't let you add greetings!");
@@ -46,10 +46,10 @@ const command: ICommand = {
     const result = await dbService.insert(message.author.id, 'greetings', [{ message: greetingStr }]);
 
     if (!result) {
-      message.author.send("Uh-oh! Couldn't add that greeting!");
+      return message.author.send("Uh-oh! Couldn't add that greeting!");
     }
 
-    message.author.send("I've added the greeting you told me about!");
+    return message.author.send("I've added the greeting you told me about!");
   },
 };
 

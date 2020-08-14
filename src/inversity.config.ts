@@ -1,7 +1,9 @@
 import { Container } from 'inversify';
 
 import ConfigService from './core/services/config.service';
+// eslint-disable-next-line import/no-cycle
 import LoggerService from './core/services/logger.service';
+// eslint-disable-next-line import/no-cycle
 import MongoService from './core/services/mongo.service';
 
 const container = new Container();

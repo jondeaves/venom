@@ -2,18 +2,22 @@ import Discord, { Collection } from 'discord.js';
 import ICommand from './ICommand';
 
 import ConfigService from '../../core/services/config.service';
+import LoggerService from '../../core/services/logger.service';
+
 import container from '../../inversity.config';
 
-const _prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
+const tmpPrefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
+const loggerService = container.resolve<LoggerService>(LoggerService);
+
 const command: ICommand = {
   name: 'help',
   aliases: ['commands'],
-  example: `\`${_prefix}help ping\``,
+  example: `\`${tmpPrefix}help ping\``,
   description: 'Lists available commands!',
   async execute(message: Discord.Message, args: string[], prefix: string, commands: Collection<string, ICommand>) {
     const data = [];
 
-    if (!args.length) {
+    if (!args || args.length === 0) {
       // Get for all commands
       data.push("here's a list of all my commands:\n");
 
@@ -52,14 +56,11 @@ const command: ICommand = {
     }
 
     try {
-      // await message.author.send(data, { split: true });
-      // if (message.channel.type === 'dm')
-      //  return;
-      // message.reply('I\'ve sent you a DM with all my commands!');
-      message.reply(data, { split: true });
+      return message.reply(data, { split: true });
     } catch (error) {
-      console.error(`Could not send help DM to ${message.author.tag}.\n`, error);
-      message.reply("it seems like I can't DM you! Do you have DMs disabled?");
+      loggerService.log('error', `Could not send help DM to ${message.author.tag}.\n`, error);
+
+      return message.reply("it seems like I can't DM you! Do you have DMs disabled?");
     }
   },
 };

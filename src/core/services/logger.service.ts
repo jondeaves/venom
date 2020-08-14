@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import path from 'path';
 import winston from 'winston';
 
+// eslint-disable-next-line import/no-cycle
 import container from '../../inversity.config';
 import LogLevel from '../types/LogLevel';
 
@@ -29,7 +30,7 @@ export default class LoggerService {
     });
   }
 
-  log(level: LogLevel, message: string, payload?: object) {
+  log(level: LogLevel, message: string, payload?: unknown): void {
     if (this._logger[level]) {
       this._logger.log(level, message, payload);
     } else {

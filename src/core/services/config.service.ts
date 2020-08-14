@@ -21,12 +21,9 @@ export default class ConfigService {
   }
 
   constructor() {
-    this.load();
-    this.setup();
-  }
-
-  private load(): void {
     dotenv.config({ path: path.resolve(__dirname, '../../', '.env') });
+
+    this.setup();
   }
 
   private setup(): void {
@@ -40,7 +37,7 @@ export default class ConfigService {
     };
   }
 
-  public get(key: keyof Config): any {
+  public get(key: keyof Config): string {
     return this.config[key];
   }
 }

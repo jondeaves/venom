@@ -5,14 +5,15 @@ import App from './app';
 
 const app = new App();
 
+
+function exitHandler(): void {
+  // Cleans up the application
+  app.exit();
+  exit();
+}
+
 try {
   app.init();
-
-  function exitHandler() {
-    // Cleans up the application
-    app.exit();
-    exit();
-  }
 
   // do something when app is closing
   process.on('exit', exitHandler);
@@ -26,6 +27,6 @@ try {
 
   // catches uncaught exceptions
   process.on('uncaughtException', exitHandler);
-} catch (e) {
+} catch {
   exit(1);
 }

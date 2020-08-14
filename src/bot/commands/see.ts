@@ -11,8 +11,8 @@ const command: ICommand = {
   name: 'see',
   example: `\`${prefix}see\``,
   description: 'Sends a DM telling you information about your user on given server.',
-  async execute(message: Discord.Message, args: string[]) {
-    message.author.send(
+  async execute(message: Discord.Message) {
+    return message.author.send(
       `Server: ${message.guild.name}\nYour username: ${message.author.username}\nYour ID: ${message.author.id}`,
     );
   },

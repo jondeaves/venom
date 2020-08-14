@@ -49,7 +49,8 @@ Depending on how large the project is, you may want to outsource the questioning
 
 ## I Want To Contribute
 
-> ### Legal Notice
+### Legal Notice
+
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 
 ### Reporting Bugs
@@ -109,6 +110,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/jondea
 - **Explain why this enhancement would be useful** to most Venom users. You may also want to point out the other projects that solved it better and which could serve as inspiration.
 
 ### Your First Code Contribution
+
 There are a few steps a developer can take to make contributing to this project go more smoothly.
 
 - Given this project is a Discord bot it means that testing changes can be difficult without the right tools set up and so the first step to contributing would be to [setup your own test environments](docs/development/environments.md).
@@ -116,6 +118,7 @@ There are a few steps a developer can take to make contributing to this project 
 - You can reference the [README.md](README.md) for steps to get the project running.
 
 ### Improving The Documentation
+
 If your change adds new features, configuration options or anything else that may require relevant documentation then it is important that those updates are done as part of your work. It is important that anything that goes into the main branch is complete, documented and usable by others.
 
 ## Styleguides
@@ -123,10 +126,11 @@ If your change adds new features, configuration options or anything else that ma
 We follow [Angular's Commit Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#)
 
 ### Commit Message Format
+
 Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
 format that includes a **type**, a **scope** and a **subject**:
 
-```
+```txt
 <type>(<scope>): <subject>
 <BLANK LINE>
 <body>
@@ -140,36 +144,41 @@ Any line of the commit message cannot be longer 100 characters! This allows the 
 to read on GitHub as well as in various git tools.
 
 ### Revert
-If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit being reverted.
+
+If the commit reverts a previous commit, it should begin with `revert:`, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit being reverted.
 
 ### Type
+
 Must be one of the following:
 
-* **feat**: A new feature
-* **fix**: A bug fix
-* **docs**: Documentation only changes
-* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing
   semi-colons, etc)
-* **refactor**: A code change that neither fixes a bug nor adds a feature
-* **perf**: A code change that improves performance
-* **test**: Adding missing tests
-* **chore**: Changes to the build process or auxiliary tools and libraries such as documentation
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests
+- **chore**: Changes to the build process or auxiliary tools and libraries such as documentation
   generation
-* **misc**: Changes that don't quite fit into other categories but are worth mentioning in the CHANGELOG - use sparingly.
-* **platform**: For changes to the code base in general.
+- **misc**: Changes that don't quite fit into other categories but are worth mentioning in the CHANGELOG - use sparingly.
+- **platform**: For changes to the code base in general.
 
 ### Subject
+
 The subject contains succinct description of the change:
 
-* use the imperative, present tense: "change" not "changed" nor "changes"
-* don't capitalize first letter
-* no dot (.) at the end
+- use the imperative, present tense: "change" not "changed" nor "changes"
+- don't capitalize first letter
+- no dot (.) at the end
 
 ### Body
+
 Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
 The body should include the motivation for the change and contrast this with previous behavior.
 
 ### Footer
+
 The footer should contain any information about **Breaking Changes** and is also the place to
 reference GitHub issues that this commit **Closes**.
 
@@ -177,4 +186,5 @@ reference GitHub issues that this commit **Closes**.
 
 
 ## Attribution
+
 This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!
