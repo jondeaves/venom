@@ -24,7 +24,7 @@ export default class DatabaseService {
   public async connect(): Promise<void> {
     this._connection = await createConnection({
       type: 'postgres',
-      url: this._configService.get('POSTGRES_DB_URI'),
+      url: this._configService.get('DATABASE_URL'),
       entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
       synchronize: true,
     });

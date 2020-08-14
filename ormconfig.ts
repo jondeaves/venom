@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(__dirname, 'src/', '.env') });
 
 const config: ConnectionOptions = {
   type: 'postgres',
-  url: process.env.POSTGRES_DB_URI,
+  url: process.env.DATABASE_URL,
   entities: [path.resolve(__dirname, 'src/**/*.entity{.ts,.js}')],
   migrations: [path.resolve(__dirname, 'src/migrations/**/*.ts')],
   cli: {

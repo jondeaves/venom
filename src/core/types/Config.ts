@@ -6,7 +6,7 @@ export default interface Config {
   DISCORD_BOT_TOKEN: string;
   MONGODB_URI: string;
   MONGODB_DB_NAME: string;
-  POSTGRES_DB_URI: string;
+  DATABASE_URL: string;
   NODE_ENV: Environment;
   LOG_LEVEL: LogLevel;
 }

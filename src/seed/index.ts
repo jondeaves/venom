@@ -13,7 +13,7 @@ async function seed(): Promise<void> {
   try {
     const connection = await createConnection({
       type: 'postgres',
-      url: process.env.POSTGRES_DB_URI,
+      url: process.env.DATABASE_URL,
       entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
       synchronize: true,
     });
