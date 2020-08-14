@@ -6,6 +6,8 @@ import 'reflect-metadata';
 
 import App from './app';
 
+dotenv.config({ path: path.resolve(__dirname, './', '.env') });
+
 const app = new App();
 
 function exitHandler(): void {
@@ -15,8 +17,6 @@ function exitHandler(): void {
 }
 
 try {
-  dotenv.config({ path: path.resolve(__dirname, './', '.env') });
-
   app.init();
 
   // do something when app is closing
