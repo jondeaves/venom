@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "lib": [
-      "es6",
-      "dom"
-    ],
+    "lib": ["es6", "dom"],
     "module": "commonjs",
     "declaration": true,
     "noImplicitAny": false,
@@ -18,11 +15,7 @@
     "baseUrl": "./",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": [
-      "reflect-metadata"
-    ]
+    "types": ["reflect-metadata", "node"]
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
