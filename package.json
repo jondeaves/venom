@@ -49,6 +49,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-unicorn": "^21.0.0",
+    "husky": "^4.2.5",
     "lint-staged": "^10.2.11",
     "markdownlint-cli": "^0.23.2",
     "nodemon": "~2.0.4",
@@ -59,7 +60,7 @@
     "tsconfig-paths": "~3.9.0",
     "typescript": "~3.9.7"
   },
-  "git": {
+  "husky": {
     "scripts": {
       "commit-msg": "./scripts/commit-msg $1",
       "pre-commit": "./node_modules/.bin/lint-staged"
