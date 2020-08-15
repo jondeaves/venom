@@ -93,7 +93,9 @@ const command: ICommand = {
 
             const matchedChar = await dbService.manager.findOne(Character, message.author.id);
             if (!matchedChar) {
-              return message.reply(`Doesn't look like you have joined this campaign`);
+              return message.reply(
+                `it looks like you don't have a character yet! Create one using \`${prefix}character create <name>\` and try again!`,
+              );
             }
 
             const campaignRepository = getRepository(Campaign);
@@ -110,6 +112,9 @@ const command: ICommand = {
               campaignRepository.save(result[0]);
               return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
             }
+            return message.reply(
+              `it looks like there's no campaign going on there, yet! Reach out to a moderator to start one.`,
+            );
           }
         }
       }
