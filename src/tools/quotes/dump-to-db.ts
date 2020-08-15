@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import mongodb from 'mongodb';
 import dotenv from 'dotenv';
+import shortid from 'shortid';
 import { Quote } from './IQuote';
 
 dotenv.config({ path: path.resolve(__dirname, '..', '..', '.env') });
@@ -30,10 +31,14 @@ async function run(): Promise<void> {
           if (mongoClientErr) throw mongoClientErr;
           const db = client.db(DB_NAME);
           console.log('Start dumping...');
-          console.debug(rows.slice(5));
 
           try {
-            await db.collection('quotes').insertMany(rows);
+            await db.collection('quotes').insertMany(
+              rows.map((row) => ({
+                ...row,
+                shortId: shortid.generate(),
+              })),
+            );
             console.log('Done dumping.');
           } catch (error) {
             console.error(error);
