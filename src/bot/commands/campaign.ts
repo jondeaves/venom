@@ -27,7 +27,9 @@ const command: ICommand = {
     _mongoService?: MongoService,
     dbService?: DatabaseService,
   ) {
-    const moderatorPermission = message.member.roles.cache.has('743465073611243662');
+    const moderatorPermission = message.member.roles.cache.has(
+      container.resolve<ConfigService>(ConfigService).get('CAMPAIGN_MODERATOR_ROLE_ID'),
+    );
     if (args[0]) {
       switch (args[0]) {
         default:

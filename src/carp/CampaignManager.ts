@@ -28,7 +28,6 @@ export default class CampaignManager {
 
   public async execute(message: Message): Promise<void> {
     const prefix = this._configService.get('CAMPAIGN_TRIGGER');
-    const moderatorPermission = message.member.roles.cache.has('743465073611243662');
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -48,7 +47,7 @@ export default class CampaignManager {
           break;
         }
         case 'stop':
-          if (moderatorPermission) {
+          if (message.member.roles.cache.has(this._configService.get('CAMPAIGN_MODERATOR_ROLE_ID'))) {
             this._databaseService.manager.delete(Campaign, this._campaign.id);
             message.channel.send(`The campaign has ended!`);
           } else {
