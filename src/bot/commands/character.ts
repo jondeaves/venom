@@ -15,8 +15,7 @@ const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER'
 const command: ICommand = {
   name: 'character',
   aliases: ['c'],
-  description:
-    'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
+  description: 'Displays your character and its current statistics, if it exists.',
   example: `\`${prefix}addgreeting Welcome to the club {name}\``,
   async execute(
     message: Discord.Message,
@@ -26,14 +25,43 @@ const command: ICommand = {
     _mongoService?: MongoService,
     dbService?: DatabaseService,
   ) {
-    // Just testing db stuff
     const matchedChar = await dbService.manager.findOne(Character, message.author.id);
-
-    if (!matchedChar) {
-      return message.reply(`Doesn't look like you have joined this campaign`);
+    if (args[0]) {
+      switch (args[0]) {
+        default:
+          if (matchedChar) {
+            return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+          }
+          break;
+        case 'delete':
+          if (matchedChar) {
+            dbService.manager.delete(Character, message.author.id);
+            return message.reply(`your character **${matchedChar.name}** has been deleted!`);
+          }
+          break;
+        case 'create':
+          if (!matchedChar) {
+            if (args[1]) {
+              const character = new Character();
+              const characterName = args[1];
+              character.name = characterName;
+              character.uid = message.author.id;
+              await dbService.manager.save(Character, character);
+              return message.reply(`that's it! You now have a character named **${args[1]}**!`);
+            }
+            return message.reply(`you're gonna have to give me a character name, too!`);
+          }
+          return message.reply(
+            `it looks like you're already set up with your character named **${matchedChar.name}**!`,
+          );
+      }
     }
-
-    return message.reply(`Welcome back ${matchedChar.name}`);
+    if (matchedChar) {
+      return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+    }
+    return message.reply(
+      `it doesn't look like you have a character set up, yet. Run \`${prefix}character create <name>\` to get started.`,
+    );
   },
 };
 

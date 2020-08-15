@@ -4,6 +4,7 @@ import LogLevel from './LogLevel';
 export default interface Config {
   BOT_TRIGGER: string;
   CAMPAIGN_TRIGGER: string;
+  CAMPAIGN_MODERATOR_ROLE_ID: string;
   DISCORD_BOT_TOKEN: string;
   MONGODB_URI: string;
   MONGODB_DB_NAME: string;
