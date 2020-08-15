@@ -15,8 +15,7 @@ const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER'
 const command: ICommand = {
   name: 'character',
   aliases: ['c'],
-  description:
-    'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
+  description: 'Displays your character and its current statistics, if it exists.',
   example: `\`${prefix}addgreeting Welcome to the club {name}\``,
   async execute(
     message: Discord.Message,
@@ -30,10 +29,15 @@ const command: ICommand = {
     const matchedChar = await dbService.manager.findOne(Character, message.author.id);
 
     if (!matchedChar) {
-      return message.reply(`Doesn't look like you have joined this campaign`);
+      return message.reply(
+        `it doesn't look like you have a character set up, yet. Run \`${prefix}create <name>\` to get started.`,
+      );
     }
-
-    return message.reply(`Welcome back ${matchedChar.name}`);
+    if (args[0] === 'delete') {
+      dbService.manager.delete(Character, message.author.id);
+      return message.reply(`your character **${matchedChar.name}** has been deleted!`);
+    }
+    return message.reply(`your character **${matchedChar.name}** is alive and well.`);
   },
 };
 
