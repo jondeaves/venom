@@ -29,10 +29,11 @@ const command: ICommand = {
 
     if (!matchedChar) {
       if (args[0]) {
-        // await dbService.manager.query(`INSERT INTO "campaign" (id, roomId) VALUES ('${message.author.id}', '${message.channel.id}')`);
-        await dbService.manager.query(
-          `INSERT INTO "character" (uid, name) VALUES ('${message.author.id}', '${args[0]}')`,
-        );
+        const character = new Character();
+        const characterName = args[0];
+        character.name = characterName;
+        character.uid = message.author.id;
+        await dbService.manager.save(Character, character);
         return message.reply(`that's it! You now have a character named **${args[0]}**!`);
       }
       return message.reply(`you're gonna have to give me a character name, too!`);
