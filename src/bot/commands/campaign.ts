@@ -31,14 +31,9 @@ const command: ICommand = {
     if (args[0]) {
       switch (args[0]) {
         default:
-          return message.reply(`I don't recognize that sub-command for \`campaign\`.`);
-        case 'status': {
-          const runningCampaigns = await dbService.manager.findAndCount(Campaign);
-          if (runningCampaigns[1] > 0) {
-            return message.reply(`there are currently ${runningCampaigns[1]} campaigns active.`);
-          }
-          return message.reply(`there are currently no campaigns active.`);
-        }
+          return message.reply(
+            `it looks like that sub-command is not something I can handle. Try \`${prefix}check <channel>\` if you want to know if a campaign is active, or simply \`${prefix}campaign\` for status!`,
+          );
         case 'start': {
           if (moderatorPermission) {
             return message.reply(
@@ -116,6 +111,12 @@ const command: ICommand = {
           }
         }
       }
+    } else {
+      const runningCampaigns = await dbService.manager.findAndCount(Campaign);
+      if (runningCampaigns[1] > 0) {
+        return message.reply(`there are currently ${runningCampaigns[1]} campaigns active.`);
+      }
+      return message.reply(`there are currently no campaigns active.`);
     }
     return message.reply(`I'm not sure what happened, but your request failed.`);
   },
