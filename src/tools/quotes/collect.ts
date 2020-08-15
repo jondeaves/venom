@@ -48,13 +48,12 @@ async function run(): Promise<void> {
 
   const csvOut = [['author', 'quote']];
   for (const row of quotes) {
-    csvOut.push([row.author, row.quote].map(v => {
-      v = v
-        .replace(/(\n+)/g, '\n')
-        .replace(/"/g, '""')
-        .trim();
-      return v.includes(' ') || v.includes('\t') ? `"${v}"` : v;
-    }));
+    csvOut.push(
+      [row.author, row.quote].map((v) => {
+        v = v.replace(/(\n+)/g, '\n').replace(/"/g, '""').trim();
+        return v.includes(' ') || v.includes('\t') ? `"${v}"` : v;
+      }),
+    );
   }
 
   csv.stringify.default(quotes, (err, out) => {

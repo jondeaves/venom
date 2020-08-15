@@ -170,7 +170,12 @@ export default class MongoService {
    *
    * @example `updateMany('123456', 'collectionName', { ident: 'generated-slug' }, { secondKey: 'new data'})`
    */
-  public async updateMany<T>(userId: string, collection: string, query: FilterQuery<T>, payload: T[]): Promise<boolean> {
+  public async updateMany<T>(
+    userId: string,
+    collection: string,
+    query: FilterQuery<T>,
+    payload: T[],
+  ): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -241,7 +246,6 @@ export default class MongoService {
       return false;
     }
   }
-
 
   /**
    * Fetches the first document that matches the query
