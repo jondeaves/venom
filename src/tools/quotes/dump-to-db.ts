@@ -5,16 +5,20 @@ import csv from 'csv';
 import fs from 'fs';
 import path from 'path';
 import mongodb from 'mongodb';
+import dotenv from 'dotenv';
 import { Quote } from './IQuote';
 
-const CONNECTION_STRING = 'mongodb://localhost:27017';
-const DB_NAME = 'venom';
+dotenv.config({ path: path.resolve(__dirname, '..', '..', '.env') });
+
+const CONNECTION_STRING = process.env.MONGODB_URI;
+const DB_NAME = process.env.MONGODB_DB_NAME;
 
 async function run(): Promise<void> {
   const outputDir = path.join(__dirname, '..', 'outputs');
+  const parse = (csv.parse as unknown) as typeof csv.parse.default;
   fs.readFile(path.join(outputDir, 'quotes_clean.csv'), (fsErr, data) => {
     if (fsErr) throw fsErr;
-    ((csv.parse as unknown) as typeof csv.parse.default)(
+    parse(
       data.toString(),
       {
         columns: true,

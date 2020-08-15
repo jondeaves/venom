@@ -65,11 +65,12 @@ async function searchQuotes(message: Discord.Message, args: string[], db: MongoS
   });
 
   if (q.length > 0) {
-    message.reply("Found a few, I'll DM you what I got!");
-    message.author.send(`Found ${q.length} quote${q.length !== 1 ? 's' : ''}:`);
+    let responseTxt = '';
     q.forEach((quote) => {
-      message.author.send(getQuoteStr(quote));
+      responseTxt += `\n${getQuoteStr(quote)}`;
     });
+    message.reply("Found a few, I'll DM you what I got!");
+    message.author.send(`Found ${q.length} quote${q.length !== 1 ? 's' : ''}:\n${responseTxt}`);
   } else {
     message.reply("Sorry, didn't find anything that matches that.");
   }
