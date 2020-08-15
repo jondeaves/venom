@@ -1,22 +1,20 @@
-import { injectable } from 'inversify';
+import { AutowiredService, OnActivation } from 'alpha-dic';
 import mongodb, { Collection } from 'mongodb';
 
-// eslint-disable-next-line import/no-cycle
-import container from '../../inversity.config';
-
 import ConfigService from './config.service';
-// eslint-disable-next-line import/no-cycle
 import LoggerService from './logger.service';
 
-@injectable()
+@AutowiredService('MongoService')
+@OnActivation(async (mongoService: MongoService) => {
+  await mongoService.connect();
+  return mongoService;
+})
 export default class MongoService {
-  private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
-
-  private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
-
   private _mongoClient: mongodb.MongoClient;
 
   public _db: mongodb.Db;
+
+  constructor(private _configService: ConfigService, private _loggerService: LoggerService) {}
 
   public async connect(): Promise<void> {
     return new Promise((resolve, reject) => {

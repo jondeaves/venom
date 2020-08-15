@@ -1,7 +1,7 @@
-import { injectable } from 'inversify';
+import { Service } from 'alpha-dic';
 import Axios, { AxiosStatic, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-@injectable()
+@Service('HttpService')
 export default class HttpService {
   private _client: AxiosStatic;
 
