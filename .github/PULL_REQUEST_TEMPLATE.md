@@ -4,6 +4,7 @@
 A quick overview of the "why" of this PR to help reviewers
 If applicable, provide links to GitHub issues
 -->
+
 [GitHub Issue](https://github.com/jondeaves/venom/issues/XXX)
 
 ## Description
@@ -19,6 +20,10 @@ create a new one?
 
 <!-- Optional: what prior work is required before merging?
 Link to PRs or describe manual steps
+-->
+
+<!-- Does this change require a database migration?
+If so has it been applied before you merge?
 -->
 
 ## Testing

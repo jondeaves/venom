@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import mongodb, { Collection, CollectionInsertOneOptions } from 'mongodb';
+import mongodb, { Collection } from 'mongodb';
 
 // eslint-disable-next-line import/no-cycle
 import container from '../../inversity.config';

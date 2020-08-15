@@ -1,4 +1,5 @@
 .eslintrc.js
+**/migrations/**
 
 # compiled output
 /dist
