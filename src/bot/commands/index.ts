@@ -4,7 +4,6 @@ import help from './help';
 import ping from './ping';
 import see from './see';
 import character from './character';
-import create from './create';
 import campaign from './campaign';
 
-export default [help, ping, see, magicball, addgreeting, character, create, campaign];
+export default [help, ping, see, magicball, addgreeting, character, campaign];

@@ -25,19 +25,43 @@ const command: ICommand = {
     _mongoService?: MongoService,
     dbService?: DatabaseService,
   ) {
-    // Just testing db stuff
     const matchedChar = await dbService.manager.findOne(Character, message.author.id);
-
-    if (!matchedChar) {
-      return message.reply(
-        `it doesn't look like you have a character set up, yet. Run \`${prefix}create <name>\` to get started.`,
-      );
+    if (args[0]) {
+      switch (args[0]) {
+        default:
+          if (matchedChar) {
+            return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+          }
+          break;
+        case 'delete':
+          if (matchedChar) {
+            dbService.manager.delete(Character, message.author.id);
+            return message.reply(`your character **${matchedChar.name}** has been deleted!`);
+          }
+          break;
+        case 'create':
+          if (!matchedChar) {
+            if (args[1]) {
+              const character = new Character();
+              const characterName = args[1];
+              character.name = characterName;
+              character.uid = message.author.id;
+              await dbService.manager.save(Character, character);
+              return message.reply(`that's it! You now have a character named **${args[1]}**!`);
+            }
+            return message.reply(`you're gonna have to give me a character name, too!`);
+          }
+          return message.reply(
+            `it looks like you're already set up with your character named **${matchedChar.name}**!`,
+          );
+      }
     }
-    if (args[0] === 'delete') {
-      dbService.manager.delete(Character, message.author.id);
-      return message.reply(`your character **${matchedChar.name}** has been deleted!`);
+    if (matchedChar) {
+      return message.reply(`your character **${matchedChar.name}** is alive and well.`);
     }
-    return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+    return message.reply(
+      `it doesn't look like you have a character set up, yet. Run \`${prefix}character create <name>\` to get started.`,
+    );
   },
 };
 
