@@ -77,11 +77,14 @@ async function searchQuotes(message: Discord.Message, args: string[], db: MongoS
 
 async function addNewQuote(message: Discord.Message, args: string[], db: MongoService): Promise<void> {
   const [authorRaw, ...restRaw] = args;
-  const hasAuthor = /<@!\d+>/.test(authorRaw);
-  const author = hasAuthor ? authorRaw : 'Anonymous';
+  const hasAuthor = /<@!\d+>/.test(authorRaw) || authorRaw.startsWith('@');
+  const author = hasAuthor ? (authorRaw.startsWith('@') ? authorRaw.slice(1) : authorRaw) : 'Anonymous';
+
   const differentAuthor = hasAuthor && author !== `<@!${message.author.id}>`;
   const authorName = differentAuthor
-    ? message.mentions.guild.members.cache.find((u) => u.user.id === message.mentions.users.first().id)?.displayName
+    ? authorRaw.startsWith('@')
+      ? authorRaw.slice(1)
+      : message.mentions.guild.members.cache.find((u) => u.user.id === message.mentions.users.first().id)?.displayName
     : message.member.displayName;
   const quote = (hasAuthor ? restRaw : [authorRaw, ...restRaw]).join(' ');
 
