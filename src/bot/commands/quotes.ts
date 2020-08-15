@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
-import MongoService from 'src/core/services/mongo.service';
-import ConfigService from 'src/core/services/config.service';
-import container from 'src/inversity.config';
 import shortid from 'shortid';
+import MongoService from '../../core/services/mongo.service';
+import ConfigService from '../../core/services/config.service';
+import container from '../../inversity.config';
 import ICommand from './ICommand';
 
 interface Quote {
