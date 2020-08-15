@@ -12,7 +12,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "start:dev": "nodemon",
     "test": "nyc --require ts-node/register mocha src/**/*.spec.ts --reporter spec --retries 3 --require 'node_modules/reflect-metadata/Reflect.js' --exit",
     "typeorm:cli": "ts-node ./node_modules/typeorm/cli -f ./ormconfig.ts",
