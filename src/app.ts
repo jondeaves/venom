@@ -110,7 +110,7 @@ export default class App {
 
     if (matchedChar === -1) {
       message.reply(
-        `it looks like you're not part of this campaign to see any information. Try \`${prefix}create <name>\` to set up a character, first.`,
+        `it looks like you're not part of this campaign to see any information. Try \`${prefix}character create <name>\` to set up a character, first.`,
       );
     } else {
       // Pass through to campaign manager
