@@ -7,7 +7,8 @@
   "bugs": "https://github.com/jondeaves/venom/issues",
   "author": "Jon Deaves <hello@jondeaves.me> https://jondeaves.me",
   "contributors": [
-    "Jon Deaves <hello@jondeaves.me> https://jondeaves.me"
+    "Jon Deaves <hello@jondeaves.me> https://jondeaves.me",
+    "Chen Asraf <chen@asraf.me> https://casraf.blog"
   ],
   "license": "MIT",
   "scripts": {
@@ -26,7 +27,9 @@
     "typecheck": "tsc --noEmit",
     "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major"
+    "release:major": "standard-version --release-as major",
+    "quotes:collect": "ts-node -r tsconfig-paths/register ./src/tools/quotes/collect.ts",
+    "quotes:dump": "ts-node -r tsconfig-paths/register ./src/tools/quotes/dump-to-db.ts"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -44,6 +47,7 @@
     "@types/axios": "^0.14.0",
     "@types/chai": "^4.2.12",
     "@types/chai-as-promised": "^7.1.3",
+    "@types/cheerio": "^0.22.21",
     "@types/dotenv": "~8.2.0",
     "@types/faker": "^4.1.12",
     "@types/mocha": "^8.0.2",
@@ -56,7 +60,9 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chalk": "^4.1.0",
+    "cheerio": "^1.0.0-rc.3",
     "commitlint": "^9.1.0",
+    "csv": "^5.3.2",
     "eslint": "^7.6.0",
     "eslint-config-airbnb-typescript": "^9.0.0",
     "eslint-config-prettier": "^6.11.0",
