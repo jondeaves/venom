@@ -95,7 +95,7 @@ export default class App {
   private async handleRPG(message: Message): Promise<boolean> {
     // Check if this is for an rpg campaign first
     const campaignRepository = getRepository(Campaign);
-
+    const prefix = this._configService.get('BOT_TRIGGER');
     const result = await campaignRepository.find({
       where: { roomId: message.channel.id },
       relations: ['characters'],
@@ -109,15 +109,14 @@ export default class App {
     const matchedChar = campaign.characters.findIndex((char) => char.uid === message.author.id);
 
     if (matchedChar === -1) {
-      // TODO: Add name of campaign so user knows what bot is talking about
-      message.author.send('You are not a member of the campaign you tried to interact with');
+      message.reply(
+        `it looks like you're not part of this campaign to see any information. Try \`${prefix}create <name>\` to set up a character, first.`,
+      );
     } else {
       // Pass through to campaign manager
       const campaignManager = new CampaignManager(this._databaseService, this._discordClient, campaign);
-
       await campaignManager.execute(message);
     }
-
     return true;
   }
 

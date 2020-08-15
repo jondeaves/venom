@@ -35,9 +35,16 @@ export default class CampaignManager {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
 
     // TODO: Handle commands better
-    if (args[0] === 'status') {
-      message.channel.send(`Welcome to campaign ${this._campaign.id}`);
-      message.channel.send(`There are ${this._campaign.characters.length} weary travellers.`);
+    if (args[0]) {
+      switch (args[0]) {
+        default:
+          message.reply(`I don't recognize that command. Try again or type \`help\` for a list of commands.`);
+          break;
+        case 'status':
+          message.channel.send(`Welcome to campaign ${this._campaign.id}`);
+          message.channel.send(`There are ${this._campaign.characters.length} weary travellers.`);
+          break;
+      }
     }
   }
 }
