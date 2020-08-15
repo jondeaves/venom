@@ -6,7 +6,7 @@ import MongoService from '../../core/services/mongo.service';
 
 import container from '../../inversity.config';
 
-import Character from '../../carp/character/character.entity';
+import Campaign from '../../carp/campaign/campaign.entity';
 
 import ICommand from './ICommand';
 
@@ -25,7 +25,23 @@ const command: ICommand = {
     _mongoService?: MongoService,
     dbService?: DatabaseService,
   ) {
-    // TODO: catch commands here
+    if (message.member.roles.cache.has('743465073611243662')) {
+      if (args[0]) {
+        switch (args[0]) {
+          default:
+            return message.reply(`I don't recognize that sub-command for \`campaign\`.`);
+        }
+      } else {
+        const runningCampaigns = await dbService.manager.findAndCount(Campaign);
+        if (runningCampaigns[1] > 0) {
+          return message.reply(`there are currently ${runningCampaigns[1]} campaigns active.`);
+        }
+        return message.reply(`there are currently no campaigns active.`);
+      }
+    }
+    return message.reply(
+      'unfortunately you do not have permission to manage campaigns. Message a moderator for information!',
+    );
   },
 };
 
