@@ -126,30 +126,37 @@ const command: ICommand = {
               where: { roomId: room.id },
               relations: ['characters'],
             });
-            console.log(result);
+
             if (result.length > 0) {
               const campaign = result[0];
 
-              const currentMap = JSON.parse(campaign.dungeon);
-              const myPos = JSON.parse(matchedChar.position);
-              for (let i = 0; i < currentMap.world.length; i += 1) {
-                for (let j = 0; j < currentMap.world[i].length; j += 1) {
-                  if (currentMap.world[i][j] === 5) {
-                    myPos.x = j;
-                    myPos.y = i;
-                    break;
-                  }
+              // eslint-disable-next-line consistent-return
+              let alreadyJoined = false;
+              campaign.characters.forEach((char) => {
+                if (char.name === matchedChar.name) {
+                  alreadyJoined = true;
                 }
-              }
-              matchedChar.position = JSON.stringify(myPos);
-              await dbService.manager.save(matchedChar);
+              });
 
-              if (typeof campaign.characters === 'undefined' || campaign.characters === null) {
-                campaign.characters = [];
+              if (!alreadyJoined) {
+                const currentMap = JSON.parse(campaign.dungeon);
+                const myPos = JSON.parse(matchedChar.position);
+
+                myPos.x = currentMap.enter.x;
+                myPos.y = currentMap.enter.y;
+
+                matchedChar.position = JSON.stringify(myPos);
+                await dbService.manager.save(matchedChar);
+
+                if (typeof campaign.characters === 'undefined' || campaign.characters === null) {
+                  campaign.characters = [];
+                }
+
+                campaign.characters.push(matchedChar);
+                await dbService.manager.save(campaign);
+                return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
               }
-              campaign.characters.push(matchedChar);
-              await dbService.manager.save(campaign);
-              return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
+              return message.reply(`you already joined that campaign with your character **${matchedChar.name}**!`);
             }
             return message.reply(
               `it looks like there's no campaign going on there, yet! Reach out to a moderator to start one.`,
