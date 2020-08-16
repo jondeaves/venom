@@ -12,6 +12,7 @@ import container from '../../inversity.config';
 
 import Campaign from '../../carp/campaign/campaign.entity';
 import Character from '../../carp/character/character.entity';
+import Monster from '../../carp/character/monster.entity';
 
 import ICommand from './ICommand';
 
@@ -59,11 +60,11 @@ const command: ICommand = {
 
             const level = roguelike({
               width: 25, // Max Width of the world
-              height: 50, // Max Height of the world
+              height: 30, // Max Height of the world
               retry: 100, // How many times should we try to add a room?
               special: false, // Should we generate a "special" room?
               room: {
-                ideal: 8, // Give up once we get this number of rooms
+                ideal: 12, // Give up once we get this number of rooms
                 min_width: 3,
                 max_width: 7,
                 min_height: 3,
@@ -73,6 +74,7 @@ const command: ICommand = {
 
             // TODO: add proper monsters and/treasure here
             let monsters = 0;
+            const monstersDb = [];
             for (let index = 0; index < level.room_count; index += 1) {
               const randomRoom = level.rooms[`${index}`];
               // eslint-disable-next-line no-continue
@@ -91,18 +93,29 @@ const command: ICommand = {
                     if (level.world[randomY][randomX] === 99) {
                       count -= 1; // try again
                     } else {
-                      level.world[randomY][randomX] = 99;
+                      const mon = new Monster();
+                      mon.name = `Ghost ${monsters + 1}`;
+                      mon.level = 1;
+                      mon.expvalue = 50;
+                      mon.current_health = 1;
+                      mon.max_health = 1;
+                      mon.power = 1;
+                      mon.defense = 0;
+                      mon.position = JSON.stringify({ x: randomX, y: randomY });
+                      monstersDb.push(mon);
                       monsters += 1;
                     }
                   }
                 }
               }
             }
+            await dbService.manager.save(monstersDb);
 
             const campaign = new Campaign();
             campaign.characters = [];
 
             campaign.roomId = room.id;
+            campaign.monsters = monstersDb;
             campaign.dungeon = level;
 
             message.reply(`debug: distributed ${monsters} monsters over ${level.room_count} rooms.`);

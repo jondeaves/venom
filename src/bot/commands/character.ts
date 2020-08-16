@@ -48,8 +48,8 @@ const command: ICommand = {
               character.uid = message.author.id;
               character.power = 1;
               character.defense = 1;
-              character.max_health = 10;
-              character.current_health = 10;
+              character.max_health = 5;
+              character.current_health = 5;
               character.position = JSON.stringify({ x: 0, y: 0 });
               await dbService.manager.save(Character, character);
               return message.reply(`that's it! You now have a character named **${args[1]}**!`);
