@@ -2,7 +2,7 @@ import Discord, { Collection } from 'discord.js';
 import { getRepository } from 'typeorm';
 
 import roguelike from 'roguelike/level/roguelike';
-import dice from 'roguelike/utility/random';
+import random from 'roguelike/utility/random';
 
 import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
@@ -59,7 +59,7 @@ const command: ICommand = {
 
             const level = roguelike({
               width: 25, // Max Width of the world
-              height: 25, // Max Height of the world
+              height: 50, // Max Height of the world
               retry: 100, // How many times should we try to add a room?
               special: false, // Should we generate a "special" room?
               room: {
@@ -75,17 +75,26 @@ const command: ICommand = {
             let monsters = 0;
             for (let index = 0; index < level.room_count; index += 1) {
               const randomRoom = level.rooms[`${index}`];
-              const hasMonster = dice.dice('d20') > 1;
               // eslint-disable-next-line no-continue
-              if (randomRoom.id === level.enter.id) continue; // skip entrance room for monsters
+              if (randomRoom.id === level.enter.room_id) continue; // skip entrance room for monsters
 
-              if (hasMonster) {
-                // let's set the X/Y value of a random spot in this room to 99, a debug id
-                const randomX = randomRoom.left + Math.floor(Math.random() * randomRoom.width) + 1;
-                const randomY = randomRoom.top + Math.floor(Math.random() * randomRoom.height) + 1;
-                if (randomX < level.width && randomY < level.height) {
-                  level.world[randomY - 1][randomX - 1] = 99;
-                  monsters += 1;
+              const roomSize = randomRoom.width * randomRoom.height;
+              const amount = random.dice(`d${Math.max(1, Math.ceil(roomSize / 10))}`);
+              for (let count = 0; count < amount; count += 1) {
+                const roll = random.dice('d20');
+                const hasMonster = roll > 1;
+                if (hasMonster) {
+                  // let's set the X/Y value of a random spot in this room to 99, a debug id
+                  const randomX = randomRoom.left + Math.floor(Math.random() * randomRoom.width);
+                  const randomY = randomRoom.top + Math.floor(Math.random() * randomRoom.height);
+                  if (randomX < level.width && randomY < level.height) {
+                    if (level.world[randomY][randomX] === 99) {
+                      count -= 1; // try again
+                    } else {
+                      level.world[randomY][randomX] = 99;
+                      monsters += 1;
+                    }
+                  }
                 }
               }
             }
