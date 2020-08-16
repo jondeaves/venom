@@ -12,4 +12,7 @@ export default class Campaign {
   @ManyToMany(() => Character)
   @JoinTable()
   characters: Character[];
+
+  @Column()
+  dungeon: string;
 }

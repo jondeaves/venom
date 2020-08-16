@@ -1,6 +1,8 @@
 import Discord, { Collection } from 'discord.js';
 import { getRepository } from 'typeorm';
 
+import roguelike from 'roguelike/level/roguelike';
+
 import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
 import MongoService from '../../core/services/mongo.service';
@@ -37,7 +39,7 @@ const command: ICommand = {
             `it looks like that sub-command is not something I can handle. Try \`${prefix}check <channel>\` if you want to know if a campaign is active, or simply \`${prefix}campaign\` for status!`,
           );
         case 'start': {
-          if (moderatorPermission) {
+          if (!moderatorPermission) {
             return message.reply(
               'unfortunately you do not have permission to manage campaigns. Message a moderator for information!',
             );
@@ -54,8 +56,28 @@ const command: ICommand = {
                 .catch(() => message.reply('problem creating that channel. Do I have any rights?'));
             }
 
+            // eslint-disable-next-line global-require
+            const level = roguelike({
+              width: 25, // Max Width of the world
+              height: 25, // Max Height of the world
+              retry: 100, // How many times should we try to add a room?
+              special: false, // Should we generate a "special" room?
+              room: {
+                ideal: 8, // Give up once we get this number of rooms
+                min_width: 3,
+                max_width: 7,
+                min_height: 3,
+                max_height: 7,
+              },
+            });
+
+            // TODO: we can iterate through the level and add monsters and/or treasure
+
             const campaign = new Campaign();
+
             campaign.roomId = room.id;
+            campaign.dungeon = level;
+
             await dbService.manager.save(campaign);
 
             return message.reply(`${args[1]} has begun a campaign! To join, create a character first.`);
@@ -103,13 +125,31 @@ const command: ICommand = {
               where: { roomId: room.id },
             });
             if (result.length > 0) {
+              const currentMap = JSON.parse(result[0].dungeon);
+              const myPos = JSON.parse(matchedChar.position);
+              for (let i = 0; i < currentMap.world.length; i += 1) {
+                for (let j = 0; j < currentMap.world[i].length; j += 1) {
+                  if (currentMap.world[i][j] === 5) {
+                    message.reply(`found starting point, saving...`);
+                    myPos.x = j;
+                    myPos.y = i;
+                    break;
+                  }
+                }
+              }
+              matchedChar.position = JSON.stringify(myPos);
+
+              const charRepo = getRepository(Character);
+              await charRepo.save(matchedChar);
+
               if (result[0].characters) {
                 result[0].characters.push(matchedChar);
               } else {
                 const characters = [matchedChar];
                 result[0].characters = characters;
               }
-              campaignRepository.save(result[0]);
+
+              await campaignRepository.save(result[0]);
               return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
             }
             return message.reply(

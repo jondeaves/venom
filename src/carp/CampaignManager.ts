@@ -1,4 +1,5 @@
 import Discord, { Message } from 'discord.js';
+import roguelike from 'roguelike/level/roguelike';
 
 import container from '../inversity.config';
 
@@ -28,6 +29,8 @@ export default class CampaignManager {
 
   public async execute(message: Message): Promise<void> {
     const prefix = this._configService.get('CAMPAIGN_TRIGGER');
+    const modeRoleID = this._configService.get('CAMPAIGN_MODERATOR_ROLE_ID');
+    const hasModPermissions = message.member.roles.cache.has(modeRoleID);
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -47,7 +50,7 @@ export default class CampaignManager {
           break;
         }
         case 'stop':
-          if (message.member.roles.cache.has(this._configService.get('CAMPAIGN_MODERATOR_ROLE_ID'))) {
+          if (hasModPermissions) {
             this._databaseService.manager.delete(Campaign, this._campaign.id);
             message.channel.send(`The campaign has ended!`);
           } else {
@@ -67,6 +70,62 @@ export default class CampaignManager {
           }
           message.reply(`I couldn't find your character. Reach out to a moderator to help you out with this issue.`);
           break;
+        }
+        case 'map': {
+          let map = JSON.parse(this._campaign.dungeon);
+          if (args[1] && args[1] === 'loc') {
+            const matchedChar = await this._databaseService.manager.findOne(Character, message.author.id);
+            message.channel.send(matchedChar.position);
+            break;
+          }
+          if (args[1] && args[1] === 'new') {
+            if (hasModPermissions) {
+              map = roguelike({
+                width: 25, // Max Width of the world
+                height: 25, // Max Height of the world
+                retry: 100, // How many times should we try to add a room?
+                special: false, // Should we generate a "special" room?
+                room: {
+                  ideal: 8, // Give up once we get this number of rooms
+                  min_width: 3,
+                  max_width: 7,
+                  min_height: 3,
+                  max_height: 7,
+                },
+              });
+
+              this._campaign.dungeon = map;
+              this._databaseService.manager.save(this._campaign);
+
+              message.channel.send(`Alright, here's a new map:`);
+            } else {
+              message.reply(
+                `unfortunately you do not have permission to run that command. Contact a moderator to discuss your intentions.`,
+              );
+            }
+          }
+          const msg = [];
+
+          const matchedChar = await this._databaseService.manager.findOne(Character, message.author.id);
+          const myPos = JSON.parse(matchedChar.position);
+          for (let i = 0; i < map.world.length; i += 1) {
+            let line = '';
+            for (let j = 0; j < map.world[i].length; j += 1) {
+              if (myPos.x === j && myPos.y === i) {
+                line += ':bust_in_silhouette:';
+                j += 1;
+              }
+              if (map.world[i][j] === 0) line += ':white_large_square:';
+              if (map.world[i][j] === 1) line += ':black_large_square:';
+              if (map.world[i][j] === 2) line += ':white_large_square:';
+              if (map.world[i][j] === 3) line += ':door:';
+              if (map.world[i][j] === 4) line += ':door:';
+              if (map.world[i][j] === 5) line += ':green_square:';
+              if (map.world[i][j] === 6) line += ':star:';
+            }
+            msg.push(line);
+          }
+          message.channel.send(msg, { split: true });
         }
       }
     }

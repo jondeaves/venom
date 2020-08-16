@@ -7,4 +7,19 @@ export default class Character {
 
   @Column()
   name: string;
+
+  @Column()
+  max_health: number;
+
+  @Column()
+  current_health: number;
+
+  @Column()
+  power: number;
+
+  @Column()
+  defense: number;
+
+  @Column()
+  position: string;
 }
