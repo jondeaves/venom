@@ -2,6 +2,7 @@ import Discord, { Collection } from 'discord.js';
 import { getRepository } from 'typeorm';
 
 import roguelike from 'roguelike/level/roguelike';
+import dice from 'roguelike/utility/random';
 
 import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
@@ -56,7 +57,6 @@ const command: ICommand = {
                 .catch(() => message.reply('problem creating that channel. Do I have any rights?'));
             }
 
-            // eslint-disable-next-line global-require
             const level = roguelike({
               width: 25, // Max Width of the world
               height: 25, // Max Height of the world
@@ -71,7 +71,24 @@ const command: ICommand = {
               },
             });
 
-            // TODO: we can iterate through the level and add monsters and/or treasure
+            // TODO: add proper monsters and/treasure here
+            let monsters = 0;
+            for (let index = 0; index < level.room_count; index += 1) {
+              const randomRoom = level.rooms[`${index}`];
+              const hasMonster = dice.dice('d20') > 1;
+              // eslint-disable-next-line no-continue
+              if (randomRoom.id === level.enter.id) continue; // skip entrance room for monsters
+
+              if (hasMonster) {
+                // let's set the X/Y value of a random spot in this room to 99, a debug id
+                const randomX = randomRoom.left + Math.floor(Math.random() * randomRoom.width) + 1;
+                const randomY = randomRoom.top + Math.floor(Math.random() * randomRoom.height) + 1;
+                if (randomX < level.width && randomY < level.height) {
+                  level.world[randomY - 1][randomX - 1] = 99;
+                  monsters += 1;
+                }
+              }
+            }
 
             const campaign = new Campaign();
             campaign.characters = [];
@@ -79,8 +96,8 @@ const command: ICommand = {
             campaign.roomId = room.id;
             campaign.dungeon = level;
 
+            message.reply(`debug: distributed ${monsters} monsters over ${level.room_count} rooms.`);
             await dbService.manager.save(campaign);
-
             return message.reply(`${args[1]} has begun a campaign! To join, create a character first.`);
           }
           return message.reply(`don't forget to assign a channel!`);
@@ -129,8 +146,6 @@ const command: ICommand = {
 
             if (result.length > 0) {
               const campaign = result[0];
-
-              // eslint-disable-next-line consistent-return
               const alreadyJoined = campaign.characters.filter((e) => e.name === matchedChar.name).length > 0;
 
               if (!alreadyJoined) {

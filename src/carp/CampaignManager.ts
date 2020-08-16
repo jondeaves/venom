@@ -182,6 +182,7 @@ export default class CampaignManager {
                     line += isMe ? ':slight_smile:' : ':neutral_face:';
                     j += 1;
                   }
+                  if (map.world[i][j] === 99) line += ':ghost:';
                   if (map.world[i][j] === 0) line += ':white_large_square:';
                   if (map.world[i][j] === 1) line += ':black_large_square:';
                   if (map.world[i][j] === 2) line += ':white_large_square:';
@@ -250,6 +251,9 @@ export default class CampaignManager {
                   case 'start flag':
                     message.channel.send(`> That's the start flag, it is where we all started in this crazy place.`);
                     break;
+                  case 'ghost':
+                    message.channel.send(`> That's a hostile **ghost**!`);
+                    break;
                 }
               }
             } else {
@@ -304,6 +308,7 @@ export default class CampaignManager {
           if (playerHere) result.push(`${player}`);
           if (world[i][j] === 3 || world[i][j] === 4) result.push('door');
           if (world[i][j] === 5) result.push('start flag');
+          if (world[i][j] === 99) result.push('ghost');
         }
       }
     }
