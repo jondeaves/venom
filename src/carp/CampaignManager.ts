@@ -186,15 +186,37 @@ export default class CampaignManager {
           }
           break;
         case 'look': {
+          const map = JSON.parse(this._campaign.dungeon);
           const matchedChar = await this._databaseService.manager.findOne(Character, message.author.id);
-          message.channel.send(`> ${matchedChar.name} looks around.`);
+          const myPos = JSON.parse(matchedChar.position);
+          message.channel.send(`> **${matchedChar.name}** looks around.`);
+
+          const list = [];
+          const surroundings = this.getSurroundings(map.world, myPos.x, myPos.y, 3);
+          surroundings.forEach((element) => {
+            switch (element) {
+              case 3:
+              case 4:
+                list.push('a door');
+                break;
+              default:
+                break;
+            }
+          });
+          if (list.length === 0) {
+            message.channel.send(`> **${matchedChar.name}** sees nothing of note.`);
+          } else if (list.length === 1) {
+            message.channel.send(`> **${matchedChar.name}** sees ${list[0]}.`);
+          } else {
+            message.channel.send(`> **${matchedChar.name}** sees ${list.join(' and ').slice(0, 4)}.`);
+          }
           break;
         }
       }
     }
   }
 
-  static getSurroundings(world: [[]], x: number, y: number, range: number): number[] {
+  getSurroundings(world: [[]], x: number, y: number, range: number): number[] {
     const result = [];
 
     // eslint-disable-next-line unicorn/no-for-loop
