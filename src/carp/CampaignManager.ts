@@ -81,7 +81,7 @@ export default class CampaignManager {
                 message.channel.send(`> ${matchedChar.name} remains in place.`);
                 break;
               case 'n':
-                if (myPos.y - 1 <= 0) {
+                if (myPos.y - 1 <= 0 || map.world[myPos.y - 1][myPos.x] === 2) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
                   myPos.y -= 1;
@@ -89,7 +89,7 @@ export default class CampaignManager {
                 }
                 break;
               case 'e':
-                if (myPos.x + 1 >= map.width) {
+                if (myPos.x + 1 >= map.width || map.world[myPos.y][myPos.x + 1] === 2) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
                   myPos.x += 1;
@@ -97,7 +97,7 @@ export default class CampaignManager {
                 }
                 break;
               case 'w':
-                if (myPos.x - 1 <= 0) {
+                if (myPos.x - 1 <= 0 || map.world[myPos.y][myPos.x - 1] === 2) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
                   myPos.x -= 1;
@@ -105,7 +105,7 @@ export default class CampaignManager {
                 }
                 break;
               case 's':
-                if (myPos.x + 1 >= map.height) {
+                if (myPos.y + 1 >= map.height || map.world[myPos.y + 1][myPos.x] === 2) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
                   myPos.y += 1;
