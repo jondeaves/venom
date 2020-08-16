@@ -74,6 +74,7 @@ const command: ICommand = {
             // TODO: we can iterate through the level and add monsters and/or treasure
 
             const campaign = new Campaign();
+            campaign.characters = [];
 
             campaign.roomId = room.id;
             campaign.dungeon = level;
@@ -123,14 +124,17 @@ const command: ICommand = {
             const campaignRepository = getRepository(Campaign);
             const result = await campaignRepository.find({
               where: { roomId: room.id },
+              relations: ['characters'],
             });
+            console.log(result);
             if (result.length > 0) {
-              const currentMap = JSON.parse(result[0].dungeon);
+              const campaign = result[0];
+
+              const currentMap = JSON.parse(campaign.dungeon);
               const myPos = JSON.parse(matchedChar.position);
               for (let i = 0; i < currentMap.world.length; i += 1) {
                 for (let j = 0; j < currentMap.world[i].length; j += 1) {
                   if (currentMap.world[i][j] === 5) {
-                    message.reply(`found starting point, saving...`);
                     myPos.x = j;
                     myPos.y = i;
                     break;
@@ -138,18 +142,13 @@ const command: ICommand = {
                 }
               }
               matchedChar.position = JSON.stringify(myPos);
+              await dbService.manager.save(matchedChar);
 
-              const charRepo = getRepository(Character);
-              await charRepo.save(matchedChar);
-
-              if (result[0].characters) {
-                result[0].characters.push(matchedChar);
-              } else {
-                const characters = [matchedChar];
-                result[0].characters = characters;
+              if (typeof campaign.characters === 'undefined' || campaign.characters === null) {
+                campaign.characters = [];
               }
-
-              await campaignRepository.save(result[0]);
+              campaign.characters.push(matchedChar);
+              await dbService.manager.save(campaign);
               return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
             }
             return message.reply(
