@@ -131,12 +131,7 @@ const command: ICommand = {
               const campaign = result[0];
 
               // eslint-disable-next-line consistent-return
-              let alreadyJoined = false;
-              campaign.characters.forEach((char) => {
-                if (char.name === matchedChar.name) {
-                  alreadyJoined = true;
-                }
-              });
+              const alreadyJoined = campaign.characters.filter((e) => e.name === matchedChar.name).length > 0;
 
               if (!alreadyJoined) {
                 const currentMap = JSON.parse(campaign.dungeon);
