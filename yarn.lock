@@ -4758,6 +4758,11 @@ rimraf@^3.0.0:
   dependencies:
     glob "^7.1.3"
 
+roguelike@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/roguelike/-/roguelike-0.5.0.tgz#83f95700981763dc12bc84923b7b41a3c01661c3"
+  integrity sha512-lf4F83zNqjtHaiEr1t2I7gaxY4Zjhrpu9vucS7kFPwnd7SwPpZdzVpZouWx2ARikoahzP7pIDa56ynfqOiKCgQ==
+
 rxjs@^6.6.2:
   version "6.6.2"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.2.tgz#8096a7ac03f2cc4fe5860ef6e572810d9e01c0d2"
