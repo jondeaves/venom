@@ -35,13 +35,12 @@ export default class App {
     const httpService = new HttpService(loggerService);
     const mongoService = new MongoService(configService, loggerService);
 
-
     // Load the async stuff
-    if (!await databaseService.connect()) {
+    if (!(await databaseService.connect())) {
       exit(1);
     }
 
-    if (!await mongoService.connect()) {
+    if (!(await mongoService.connect())) {
       exit(1);
     }
 
@@ -51,7 +50,7 @@ export default class App {
       httpService,
       loggerService,
       mongoService,
-    }
+    };
   }
 
   public exit(): void {

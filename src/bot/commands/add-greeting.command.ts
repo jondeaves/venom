@@ -19,12 +19,16 @@ export default class AddGreetingCommand extends Command {
 
     // Check for dupes
     const greetingStr = args.join(' ');
-    const matchedMessages = await this.dependencies.mongoService.find(message.author.id, 'greetings', { message: greetingStr });
+    const matchedMessages = await this.dependencies.mongoService.find(message.author.id, 'greetings', {
+      message: greetingStr,
+    });
     if (matchedMessages.length > 0) {
       return message.author.send('That greeting has already been added!');
     }
 
-    const result = await this.dependencies.mongoService.insert(message.author.id, 'greetings', [{ message: greetingStr }]);
+    const result = await this.dependencies.mongoService.insert(message.author.id, 'greetings', [
+      { message: greetingStr },
+    ]);
 
     if (!result) {
       return message.author.send("Uh-oh! Couldn't add that greeting!");

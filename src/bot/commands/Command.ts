@@ -33,13 +33,7 @@ export default abstract class Command {
    */
   public commandData: { [x: string]: unknown };
 
-  constructor(
-    dependencies: Dependencies,
-    name: string,
-    aliasis: string[],
-    description: string,
-    examples: string[],
-  ) {
+  constructor(dependencies: Dependencies, name: string, aliasis: string[], description: string, examples: string[]) {
     this.dependencies = dependencies;
     this.name = name;
     this.aliases = aliasis;
@@ -48,5 +42,5 @@ export default abstract class Command {
     this.commandData = {};
   }
 
-  abstract async execute(message: Discord.Message, args: string[]): Promise<Discord.Message | void>
+  abstract async execute(message: Discord.Message, args: string[]): Promise<Discord.Message | void>;
 }

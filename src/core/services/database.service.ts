@@ -11,7 +11,7 @@ export default class DatabaseService {
     return this._connection.manager;
   }
 
-  constructor(private _configService: ConfigService, private _loggerService: LoggerService) { }
+  constructor(private _configService: ConfigService, private _loggerService: LoggerService) {}
 
   async connect(): Promise<boolean> {
     try {

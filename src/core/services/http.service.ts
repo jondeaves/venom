@@ -12,7 +12,7 @@ export default class HttpService {
   public async get(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse> {
     this._loggerService.log('debug', 'Sending HTTP GET', {
       url,
-      config
+      config,
     });
 
     return this._client.get(url, config);
