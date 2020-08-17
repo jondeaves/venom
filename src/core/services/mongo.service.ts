@@ -1,5 +1,4 @@
-import mongodb, { Collection } from 'mongodb';
-
+import mongodb, { FilterQuery } from 'mongodb';
 import ConfigService from './config.service';
 import LoggerService from './logger.service';
 
@@ -8,7 +7,11 @@ export default class MongoService {
 
   public _db: mongodb.Db;
 
-  constructor(private _configService: ConfigService, private _loggerService: LoggerService) { }
+  constructor(private _configService: ConfigService, private _loggerService: LoggerService) {}
+
+  public get dbInstance(): mongodb.Db {
+    return this._db;
+  }
 
   public async connect(): Promise<boolean> {
     const prom = new Promise((resolve, reject) => {
@@ -55,7 +58,7 @@ export default class MongoService {
    *
    * @example findOne('123456', 'collectionName', { ident: 'generated-slug' })
    */
-  public async findOne(userId: string, collection: string, query: unknown): Promise<Collection | boolean> {
+  public async findOne<T>(userId: string, collection: string, query: FilterQuery<T>): Promise<T | undefined> {
     try {
       this.verifyConnection();
 
@@ -77,7 +80,8 @@ export default class MongoService {
         query,
       });
 
-      return false;
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      return undefined;
     }
   }
 
@@ -91,7 +95,7 @@ export default class MongoService {
    *
    * @example find('123456', 'collectionName', { key: 'value' })
    */
-  public async find(userId: string, collection: string, query: unknown): Promise<Collection[]> {
+  public async find<T>(userId: string, collection: string, query: FilterQuery<T>): Promise<T[]> {
     try {
       this.verifyConnection();
 
@@ -127,11 +131,11 @@ export default class MongoService {
    *
    * @example `insert('123456', 'collectionName', [{ body: 'This is a document!' }])`
    */
-  public async insert(userId: string, collection: string, payload: unknown[]): Promise<boolean> {
+  public async insert<T>(userId: string, collection: string, payload: T[]): Promise<boolean> {
     try {
       this.verifyConnection();
 
-      const resp = await this._db.collection(collection).insert(payload);
+      const resp = await this._db.collection(collection).insertMany(payload);
 
       if (resp.result.ok !== 1 || resp.insertedCount !== payload.length) {
         throw new Error(JSON.stringify(resp));
@@ -168,7 +172,12 @@ export default class MongoService {
    *
    * @example `updateMany('123456', 'collectionName', { ident: 'generated-slug' }, { secondKey: 'new data'})`
    */
-  public async updateMany(userId: string, collection: string, query: unknown, payload: unknown[]): Promise<boolean> {
+  public async updateMany<T>(
+    userId: string,
+    collection: string,
+    query: FilterQuery<T>,
+    payload: T[],
+  ): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -210,7 +219,7 @@ export default class MongoService {
    *
    * @example `deleteMany('123456', 'collectionName', { ident: 'generated-slug' })`
    */
-  public async deleteMany(userId: string, collection: string, query: unknown): Promise<boolean> {
+  public async deleteMany<T>(userId: string, collection: string, query: FilterQuery<T>): Promise<boolean> {
     try {
       this.verifyConnection();
 
@@ -237,6 +246,42 @@ export default class MongoService {
       });
 
       return false;
+    }
+  }
+
+  /**
+   * Fetches the first document that matches the query
+   *
+   * @param collection String identifier for collection document belongs to
+   * @param query key/value pairs of search conditions
+   *
+   * @returns Returns matched document
+   *
+   * @example findOne('123456', 'collectionName', { ident: 'generated-slug' })
+   */
+  public async count<T>(userId: string, collection: string, query: FilterQuery<T>): Promise<number> {
+    try {
+      this.verifyConnection();
+
+      const resp = await this._db.collection(collection).count(query);
+
+      this._loggerService.log('verbose', 'Counted documents in collection from MongoDB', {
+        userId,
+        collection,
+        query,
+        resp,
+      });
+
+      return resp;
+    } catch (error) {
+      this._loggerService.log('error', 'Could not count documents in collection', {
+        userId,
+        error,
+        collection,
+        query,
+      });
+
+      return 0;
     }
   }
 

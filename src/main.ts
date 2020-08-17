@@ -7,7 +7,7 @@ import path from 'path';
 import App from './app';
 
 // Load config
-dotenv.config({ path: path.resolve(__dirname, './', '.env') });
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = new App();
 
