@@ -1,39 +1,66 @@
 import { exit } from 'process';
-import { AutowiredService } from 'alpha-dic';
 
 import ConfigService from './core/services/config.service';
 import DatabaseService from './core/services/database.service';
+import HttpService from './core/services/http.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
 
+import Dependencies from './core/types/Dependencies';
+
 import Bot from './bot/Bot';
 
-@AutowiredService('App')
 export default class App {
-  private _bot: Bot;
-
-  constructor(
-    private _configService?: ConfigService,
-    private _loggerService?: LoggerService,
-    private _databaseService?: DatabaseService,
-    private _mongoService?: MongoService,
-  ) {
-    // this._bot = new Bot(this._configService, this._loggerService, this._mongoService, this._databaseService);
-  }
+  private _dependencies: Dependencies;
 
   // eslint-disable-next-line class-methods-use-this
   public async start(): Promise<void> {
+    await this.loadDependencies();
+
+    const bot = new Bot(this._dependencies);
+
     try {
-      this._loggerService.log('info', 'Application started');
-      // this._bot = new Bot(this._configService, this._loggerService, this._mongoService, this._databaseService);
-      // await this._bot.bind();
+      await bot.bind();
+      this._dependencies.loggerService.log('info', 'Application started');
     } catch {
       exit(1);
     }
   }
 
+  private async loadDependencies(): Promise<void> {
+    // Create the services
+    const configService = new ConfigService();
+    const loggerService = new LoggerService(configService);
+    const databaseService = new DatabaseService(configService, loggerService);
+    const httpService = new HttpService(loggerService);
+    const mongoService = new MongoService(configService, loggerService);
+
+
+    // Load the async stuff
+    if (!await databaseService.connect()) {
+      exit(1);
+    }
+
+    if (!await mongoService.connect()) {
+      exit(1);
+    }
+
+    this._dependencies = {
+      configService,
+      databaseService,
+      httpService,
+      loggerService,
+      mongoService,
+    }
+  }
+
   public exit(): void {
-    this._mongoService.disconnect();
-    this._databaseService.disconnect();
+    if (this._dependencies.mongoService) {
+      this._dependencies.mongoService.disconnect();
+    }
+
+    if (this._dependencies.databaseService) {
+      this._dependencies.databaseService.disconnect();
+    }
   }
 }

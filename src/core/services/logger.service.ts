@@ -1,4 +1,3 @@
-import { AutowiredService } from 'alpha-dic';
 import path from 'path';
 import winston from 'winston';
 
@@ -6,7 +5,6 @@ import LogLevel from '../types/LogLevel';
 
 import ConfigService from './config.service';
 
-@AutowiredService('LoggerService')
 export default class LoggerService {
   private _logger: winston.Logger;
 

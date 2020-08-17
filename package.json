@@ -29,7 +29,6 @@
     "release:major": "standard-version --release-as major"
   },
   "dependencies": {
-    "alpha-dic": "^2.0.1",
     "axios": "^0.19.2",
     "discord.js": "~12.2.0",
     "dotenv": "~8.2.0",

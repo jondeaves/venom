@@ -1,37 +1,63 @@
 import Discord from 'discord.js';
 
-import ConfigService from '../core/services/config.service';
-import DatabaseService from '../core/services/database.service';
-import LoggerService from '../core/services/logger.service';
-import MongoService from '../core/services/mongo.service';
+import Dependencies from '../core/types/Dependencies';
 
-import rawCommands from './commands';
-import ICommand from './commands/ICommand';
+import Command from './commands/Command';
+import AddGreetingCommand from './commands/add-greeting.command';
+import EightBallCommand from './commands/eight-ball.command';
+import HelpCommand from './commands/help.command';
+import PingCommand from './commands/ping.command';
+import SeeCommand from './commands/see.command';
+import CharacterCommand from './commands/character.command';
 
 export default class Bot {
   private _discordClient: Discord.Client;
 
-  private _commandList: Discord.Collection<string, ICommand>;
+  private _commandList: Discord.Collection<string, Command>;
 
-  constructor(
-    private _configService: ConfigService,
-    private _loggerService: LoggerService,
-    private _mongoService: MongoService,
-    private _databaseService: DatabaseService,
-  ) {
+  constructor(private _dependencies: Dependencies) {
     this._discordClient = new Discord.Client();
-    this._commandList = new Discord.Collection<string, ICommand>();
+    this._commandList = new Discord.Collection<string, Command>();
+  }
+
+  private setCommands(): void {
+    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+
+    //   name: 'character',
+    //   aliases: ['c'],
+    //   description:
+    //     'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
+    //   example: `\`${prefix}addgreeting Welcome to the club {name}\``,
+
+
+    // Load in our commands for the command handler
+    // TODO: Refactor this into a CommandHandler class?
+    const addGreetingCmd = new AddGreetingCommand(this._dependencies, 'addgreeting', ['ag'], 'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.', [`\`${prefix}addgreeting Welcome to the club {name}\``])
+    const characterCmd = new CharacterCommand(this._dependencies, 'character', ['c'], 'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.', [`\`${prefix}addgreeting Welcome to the club {name}\``]);
+    const eightBallCmd = new EightBallCommand(this._dependencies, '8ball', ['eightball', 'magicball', 'ball', 'wisdomball'], 'Ask the magic eightball for advice.', [`\`${prefix} 8ball will I be awesome today?\``]);
+    const helpCmd = new HelpCommand(this._dependencies, 'help', ['commands'], 'Lists available commands and their usage.', [`\`${prefix}help\``, `\`${prefix}help ping\``]);
+    const pingCmd = new PingCommand(this._dependencies, 'ping', ['hello'], 'Responds, kind of like telling you the bot is alive.', [`\`${prefix}ping\``]);
+    const seeCmd = new SeeCommand(this._dependencies, 'see', ['me'], 'Sends a DM telling you information about your user on given server.', [`\`${prefix}see\``]);
+
+    this._commandList.set(addGreetingCmd.name, addGreetingCmd);
+    this._commandList.set(characterCmd.name, characterCmd);
+    this._commandList.set(eightBallCmd.name, eightBallCmd);
+    this._commandList.set(pingCmd.name, pingCmd);
+    this._commandList.set(seeCmd.name, seeCmd);
+    this._commandList.set(helpCmd.name, helpCmd);
+
+    // Set custom data on commands
+    this._commandList.get('help').commandData = {
+      commandList: this._commandList,
+      prefix,
+    };
   }
 
   /**
    * Binds event listeners and connects to the server.
    */
   public async bind(): Promise<void> {
-    // Load in our commands for the command handler
-    // TODO: Refactor this into a CommandHandler class?
-    rawCommands.forEach((rawCommand) => {
-      this._commandList.set(rawCommand.name, rawCommand);
-    });
+    this.setCommands();
 
     // Bind our events
     this._discordClient.once('ready', this.onReady.bind(this)); // Triggers once after connecting to server
@@ -40,30 +66,33 @@ export default class Bot {
 
     // Perform connect, throw the error if we can't
     try {
-      await this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN'));
+      await this._discordClient.login(this._dependencies.configService.get('DISCORD_BOT_TOKEN'));
     } catch (error) {
-      const errMsg = `Cannot initialise Discord client. Check the token: ${this._configService.get(
+      const errMsg = `Cannot initialise Discord client. Check the token: ${this._dependencies.configService.get(
         'DISCORD_BOT_TOKEN',
       )}`;
 
-      this._loggerService.log('error', errMsg, { error });
+      this._dependencies.loggerService.log('error', errMsg, { error });
 
       throw new Error(errMsg);
     }
   }
 
   private onReady(): void {
-    this._loggerService.log('info', 'Venom is connected to the Discord server');
+    this._dependencies.loggerService.log('info', 'Venom is connected to the Discord server');
   }
 
   private async onMessage(message: Discord.Message): Promise<void> {
-    const prefix = this._configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
 
     // If the message either doesn't start with the prefix or was sent by a bot, exit early.
-    if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
+    if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) {
+      return;
+    }
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
+
     const command =
       this._commandList.get(commandName) ||
       this._commandList.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
@@ -72,9 +101,11 @@ export default class Bot {
       message.reply("looks like I haven't learned that trick yet!");
     } else {
       try {
-        await command.execute(message, args, prefix, this._commandList, this._mongoService, this._databaseService);
+        // await command.execute(message, args, prefix, this._commandList, this._mongoService, this._databaseService);
+
+        await command.execute(message, args);
       } catch (error) {
-        this._loggerService.log('error', error.message);
+        this._dependencies.loggerService.log('error', error.message);
         message.reply('there was an error trying to follow that command!');
       }
     }

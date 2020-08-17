@@ -1,15 +1,9 @@
-import { AutowiredService, OnActivation } from 'alpha-dic';
 import path from 'path';
 import { createConnection, Connection, EntityManager } from 'typeorm';
 
 import ConfigService from './config.service';
 import LoggerService from './logger.service';
 
-@AutowiredService('DatabaseService')
-@OnActivation(async (dbService: DatabaseService) => {
-  await dbService.connect();
-  return dbService;
-})
 export default class DatabaseService {
   public _connection: Connection;
 
@@ -17,16 +11,24 @@ export default class DatabaseService {
     return this._connection.manager;
   }
 
-  constructor(private _configService: ConfigService, private _loggerService: LoggerService) {}
+  constructor(private _configService: ConfigService, private _loggerService: LoggerService) { }
 
-  async connect(): Promise<void> {
-    this._connection = await createConnection({
-      type: 'postgres',
-      url: this._configService.get('DATABASE_URL'),
-      entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
-      synchronize: true,
-    });
-    this._loggerService.log('info', 'Venom is connected to Postgres');
+  async connect(): Promise<boolean> {
+    try {
+      this._connection = await createConnection({
+        type: 'postgres',
+        url: this._configService.get('DATABASE_URL'),
+        entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
+        synchronize: true,
+      });
+      this._loggerService.log('info', 'Venom is connected to Postgres');
+
+      return true;
+    } catch (error) {
+      this._loggerService.log('error', 'Venom could not connect to Postgres', { error });
+
+      return false;
+    }
   }
 
   public disconnect(): void {

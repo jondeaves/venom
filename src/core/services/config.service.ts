@@ -1,10 +1,7 @@
-import { Service } from 'alpha-dic';
-
 import Config from '../types/Config';
 import Environment from '../types/Environment';
 import LogLevel from '../types/LogLevel';
 
-@Service('ConfigService')
 export default class ConfigService {
   /**
    * Object that holds all config values used by the system
