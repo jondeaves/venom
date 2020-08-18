@@ -31,6 +31,7 @@ export default class CampaignManager {
 
     const matchedCharIndex = this._campaign.characters.findIndex((char) => char.uid === message.author.id);
     const matchedChar = this._campaign.characters[matchedCharIndex];
+    const currentMap = JSON.parse(this._campaign.dungeon);
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -84,7 +85,6 @@ export default class CampaignManager {
         case 'w':
         case 'walk': {
           if (args[1]) {
-            const map = JSON.parse(this._campaign.dungeon);
             switch (args[1]) {
               default:
                 message.channel.send(`> ${matchedChar.name} remains in place.`);
@@ -92,7 +92,7 @@ export default class CampaignManager {
               case 'n':
                 if (
                   matchedChar.position.y - 1 <= 0 ||
-                  map.world[matchedChar.position.y - 1][matchedChar.position.x] === 2
+                  currentMap.world[matchedChar.position.y - 1][matchedChar.position.x] === 2
                 ) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
@@ -102,8 +102,8 @@ export default class CampaignManager {
                 break;
               case 'e':
                 if (
-                  matchedChar.position.x + 1 >= map.width ||
-                  map.world[matchedChar.position.y][matchedChar.position.x + 1] === 2
+                  matchedChar.position.x + 1 >= currentMap.width ||
+                  currentMap.world[matchedChar.position.y][matchedChar.position.x + 1] === 2
                 ) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
@@ -114,7 +114,7 @@ export default class CampaignManager {
               case 'w':
                 if (
                   matchedChar.position.x - 1 <= 0 ||
-                  map.world[matchedChar.position.y][matchedChar.position.x - 1] === 2
+                  currentMap.world[matchedChar.position.y][matchedChar.position.x - 1] === 2
                 ) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
@@ -124,8 +124,8 @@ export default class CampaignManager {
                 break;
               case 's':
                 if (
-                  matchedChar.position.y + 1 >= map.height ||
-                  map.world[matchedChar.position.y + 1][matchedChar.position.x] === 2
+                  matchedChar.position.y + 1 >= currentMap.height ||
+                  currentMap.world[matchedChar.position.y + 1][matchedChar.position.x] === 2
                 ) {
                   message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
                 } else {
@@ -135,13 +135,12 @@ export default class CampaignManager {
                 break;
             }
             await this._databaseService.manager.save(matchedChar);
-            await this.monsterTurn(message.channel, map);
+            await this.monsterTurn(message.channel, currentMap);
           }
           break;
         }
         case 'map':
           {
-            const map = JSON.parse(this._campaign.dungeon);
             if (args[1] && args[1] === 'loc') {
               message.channel.send(matchedChar.position);
               break;
@@ -159,9 +158,9 @@ export default class CampaignManager {
               6: 'triangular_flag_on_post',
             };
 
-            for (let i = 0; i < map.world.length; i += 1) {
+            for (let i = 0; i < currentMap.world.length; i += 1) {
               let line = '';
-              for (let j = 0; j < map.world[i].length; j += 1) {
+              for (let j = 0; j < currentMap.world[i].length; j += 1) {
                 const vec = new Vector2(j, i);
                 const playerHere = this._campaign.characters.find((char) => this.isPlayerHere(char, vec));
                 const monsterHere = this._campaign.monsters.find((mon) => this.isMonsterHere(mon, vec));
@@ -171,7 +170,7 @@ export default class CampaignManager {
                   } else if (monsterHere) {
                     line += monsterHere.graphic;
                   } else {
-                    line += mapMarkers[map.world[i][j]];
+                    line += mapMarkers[currentMap.world[i][j]];
                   }
                 }
               }
@@ -181,11 +180,11 @@ export default class CampaignManager {
           }
           break;
         case 'look': {
-          const map = JSON.parse(this._campaign.dungeon);
+          const map = this._campaign.dungeon;
           message.channel.send(`> **${matchedChar.name}** looks around.`);
 
           const list = this.getSurroundings(
-            map.world,
+            currentMap.world,
             new Vector2(matchedChar.position.x, matchedChar.position.y),
             3,
             message.author.id,
@@ -195,8 +194,12 @@ export default class CampaignManager {
         }
         case 'examine':
           if (args[1]) {
-            const map = JSON.parse(this._campaign.dungeon);
-            const surroundings = await this.getSurroundings(map.world, matchedChar.position, 4, message.author.id);
+            const surroundings = await this.getSurroundings(
+              currentMap.world,
+              matchedChar.position,
+              4,
+              message.author.id,
+            );
             const nextArgs = args.splice(1).join(' ').toLowerCase();
             if (surroundings.find((obj) => obj.toLowerCase() === nextArgs)) {
               const allChar = this._campaign.characters;
@@ -238,7 +241,6 @@ export default class CampaignManager {
           break;
         case 'attack': {
           if (args[1]) {
-            const map = JSON.parse(this._campaign.dungeon);
             const nextArgs = args.splice(1).join(' ');
             const allChar = this._campaign.characters;
             const allMon = this._campaign.monsters;
@@ -276,7 +278,7 @@ export default class CampaignManager {
               }
             }
             message.channel.send(`> **${matchedChar.name}** swings widely into the air, hitting nothing.`);
-            await this.monsterTurn(message.channel, map, 2); // favor attack
+            await this.monsterTurn(message.channel, currentMap, 2); // favor attack
           }
         }
       }
