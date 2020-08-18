@@ -8,7 +8,7 @@ import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
 import MongoService from '../../core/services/mongo.service';
 
-import Vector2 from '../../core/types/Vector2';
+import Vector2 from '../../core/helpers/Vector2';
 
 import container from '../../inversity.config';
 

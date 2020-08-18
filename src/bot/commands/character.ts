@@ -9,7 +9,7 @@ import container from '../../inversity.config';
 import Character from '../../carp/character/character.entity';
 
 import ICommand from './ICommand';
-import Vector2 from '../../core/types/Vector2';
+import Vector2 from '../../core/helpers/Vector2';
 
 const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
 

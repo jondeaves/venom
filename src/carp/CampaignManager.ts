@@ -1,7 +1,7 @@
 import Discord, { Message } from 'discord.js';
 import random from 'roguelike/utility/random';
 import Map from './types/Map';
-import Vector2 from '../core/types/Vector2';
+import Vector2 from '../core/helpers/Vector2';
 
 import container from '../inversity.config';
 

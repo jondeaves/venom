@@ -1,7 +1,4 @@
-export interface Vector2Position {
-  x: number;
-  y: number;
-}
+import Vector2Position from '../types/Vector2Position';
 
 export default class Vector2 implements Vector2Position {
   public x: number;
@@ -19,8 +16,12 @@ export default class Vector2 implements Vector2Position {
   }
 
   public static fromJSON(value: string): Vector2 {
-    const parsed: Vector2Position = JSON.parse(value);
-    return new Vector2(parsed.x, parsed.y);
+    try {
+      const parsed: Vector2Position = JSON.parse(value);
+      return new Vector2(parsed.x, parsed.y);
+    } catch {
+      return Vector2.zero;
+    }
   }
 
   public static get zero(): Vector2 {

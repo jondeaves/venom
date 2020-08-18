@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import Vector2 from '../../core/types/Vector2';
+import Vector2 from '../../core/helpers/Vector2';
 
 @Entity()
 export default class Monster {

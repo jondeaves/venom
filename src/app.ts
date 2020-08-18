@@ -32,6 +32,7 @@ export default class App {
     try {
       this._bot = new Bot(this._configService, this._loggerService, this._mongoService, this._databaseService);
       await this._bot.bind();
+      this._loggerService.log('info', 'Venom is running');
     } catch {
       exit(1);
     }
