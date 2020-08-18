@@ -28,6 +28,14 @@ export default class CharacterCommand extends Command {
             return message.reply(`your character **${matchedChar.name}** has been deleted!`);
           }
           break;
+        case 'assign':
+          if (args[1] && matchedChar) {
+            const emote = args[1];
+            matchedChar.graphic = emote;
+            await this.dependencies.databaseService.manager.save(Character, matchedChar);
+            return message.reply(`your character **${matchedChar.name}** has a new graphic: ${matchedChar.graphic}!`);
+          }
+          break;
         case 'create':
           if (!matchedChar) {
             if (args[1]) {
