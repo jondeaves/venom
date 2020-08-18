@@ -52,5 +52,12 @@ describe('Vector2', () => {
 
       expect(vec.equals(otherVec)).to.be.equal(true);
     });
+
+    it('should turn false when two vector objects do not match', async () => {
+      const vec = new Vector2(1, 1);
+      const otherVec = new Vector2(2, 4);
+
+      expect(vec.equals(otherVec)).to.be.equal(false);
+    });
   });
 });
