@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinTable, ManyToMany } from 'typeorm';
 import Character from '../character/character.entity';
 import Monster from '../character/monster.entity';
+import Map from '../helpers/Map';
 
 @Entity()
 export default class Campaign {
@@ -18,6 +19,12 @@ export default class Campaign {
   @JoinTable()
   monsters: Monster[];
 
-  @Column()
-  dungeon: string;
+  @Column({
+    type: 'json',
+    transformer: {
+      to: (value: string): Map => Map.fromJSON(value),
+      from: (value: Map): string => value.toJSON(),
+    },
+  })
+  dungeon: Map;
 }

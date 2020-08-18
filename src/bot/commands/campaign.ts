@@ -175,7 +175,7 @@ const command: ICommand = {
               const alreadyJoined = campaign.characters.some((char) => char.name === matchedChar.name);
 
               if (!alreadyJoined) {
-                const currentMap = JSON.parse(campaign.dungeon);
+                const currentMap = campaign.dungeon;
 
                 matchedChar.position = new Vector2(currentMap.enter.x, currentMap.enter.y);
 

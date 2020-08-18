@@ -1,6 +1,6 @@
 import Discord, { Message } from 'discord.js';
 import random from 'roguelike/utility/random';
-import Map from './types/Map';
+import Map from './types/MapObject';
 import Vector2 from '../core/helpers/Vector2';
 
 import container from '../inversity.config';
@@ -31,7 +31,7 @@ export default class CampaignManager {
 
     const matchedCharIndex = this._campaign.characters.findIndex((char) => char.uid === message.author.id);
     const matchedChar = this._campaign.characters[matchedCharIndex];
-    const currentMap = JSON.parse(this._campaign.dungeon);
+    const currentMap = this._campaign.dungeon;
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -180,7 +180,6 @@ export default class CampaignManager {
           }
           break;
         case 'look': {
-          const map = this._campaign.dungeon;
           message.channel.send(`> **${matchedChar.name}** looks around.`);
 
           const list = this.getSurroundings(
