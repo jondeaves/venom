@@ -6,7 +6,7 @@ import Map from './Map';
 describe('Map', () => {
   describe('Undefined', () => {
     it('should return a map with zero values', async () => {
-      const result = new Map();
+      const result = new Map(0, 0, undefined, undefined, 0, undefined, undefined);
 
       expect(result.isNull).to.deep.equal(true);
     });
@@ -14,12 +14,12 @@ describe('Map', () => {
 
   describe('toJSON', () => {
     it('should turn Map into string', async () => {
-      const map = new Map();
-      map.width = 1;
-      map.height = 1;
+      const map = new Map(1, 1, undefined, undefined, 0, undefined, undefined);
       const result = map.toJSON();
 
-      expect(result).to.be.equal('{"width":1,"height":1}');
+      expect(result).to.be.equal(
+        '{"width":1,"height":1, "enter":undefined, "exit":undefined, "room_count":0, "rooms":undefined, "world":undefined}',
+      );
     });
   });
 

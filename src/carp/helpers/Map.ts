@@ -26,25 +26,36 @@ export default class Map implements MapObject {
 
   public world: [[]];
 
+  constructor(_width: number, _height: number, _enter: any, _exit: any, _room_count: number, _rooms: any, _world: any) {
+    this.width = _width;
+    this.height = _height;
+    this.enter = _enter;
+    this.exit = _exit;
+    this.room_count = _room_count;
+    this.rooms = _rooms;
+    this.world = _world;
+  }
+
   public toJSON(): string {
-    const { width, height } = this;
-    return JSON.stringify({ width, height });
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { width, height, enter, exit, room_count, rooms, world } = this;
+    return JSON.stringify({ width, height, enter, exit, room_count, rooms, world });
   }
 
   public static fromJSON(value: string): Map {
     try {
       const parsed: MapObject = JSON.parse(value);
-      const map = new Map();
-      map.width = parsed.width;
-      map.height = parsed.height;
-      map.enter = parsed.enter;
-      map.exit = parsed.exit;
-      map.room_count = parsed.room_count;
-      map.rooms = parsed.rooms;
-      map.world = parsed.world;
-      return map;
+      return new Map(
+        parsed.width,
+        parsed.height,
+        parsed.enter,
+        parsed.exit,
+        parsed.room_count,
+        parsed.rooms,
+        parsed.world,
+      );
     } catch {
-      return new Map(); // just a default map
+      return new Map(0, 0, undefined, undefined, 0, undefined, undefined); // just a default map
     }
   }
 

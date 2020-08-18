@@ -11,6 +11,7 @@ import Character from '../../carp/character/character.entity';
 import Monster from '../../carp/character/monster.entity';
 
 import Command from './Command';
+import Map from '../../carp/helpers/Map';
 
 export default class CampaignCommand extends Command {
   public commandData: {
@@ -99,10 +100,20 @@ export default class CampaignCommand extends Command {
 
             const campaign = new Campaign();
             campaign.characters = [];
-
             campaign.roomId = room.id;
             campaign.monsters = monstersDb;
-            campaign.dungeon = level;
+
+            const map = new Map(
+              level.width,
+              level.height,
+              level.enter,
+              level.exit,
+              level.room_count,
+              level.rooms,
+              level.world,
+            );
+
+            campaign.dungeon = map;
 
             message.reply(`debug: distributed ${monsters} monsters over ${level.room_count} rooms.`);
             await this.dependencies.databaseService.manager.save(campaign);
@@ -158,7 +169,6 @@ export default class CampaignCommand extends Command {
 
               if (!alreadyJoined) {
                 const currentMap = campaign.dungeon;
-
                 matchedChar.position = new Vector2(currentMap.enter.x, currentMap.enter.y);
 
                 await this.dependencies.databaseService.manager.save(matchedChar);
