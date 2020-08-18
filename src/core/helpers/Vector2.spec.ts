@@ -44,4 +44,13 @@ describe('Vector2', () => {
       expect(result).to.deep.equal({ x: 0, y: 0 });
     });
   });
+
+  describe('equals', () => {
+    it('should turn true when two vector objects have equal values', async () => {
+      const vec = new Vector2(1, 1);
+      const otherVec = new Vector2(1, 1);
+
+      expect(vec.equals(otherVec)).to.be.equal(true);
+    });
+  });
 });

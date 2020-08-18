@@ -151,8 +151,8 @@ export default class CampaignManager {
               2: ':white_large_square:',
               3: ':door:',
               4: ':door:',
-              5: 'checkered_flag',
-              6: 'triangular_flag_on_post',
+              5: ':checkered_flag:',
+              6: ':triangular_flag_on_post:',
             };
 
             for (let i = 0; i < currentMap.world.length; i += 1) {
@@ -287,12 +287,12 @@ export default class CampaignManager {
   }
 
   isPlayerHere(char: Character, vec: Vector2): boolean {
-    if (char.position === vec) return true;
+    if (char.position.equals(vec)) return true;
     return false;
   }
 
   isMonsterHere(mon: Monster, vec: Vector2): boolean {
-    if (mon.position === vec) return true;
+    if (mon.position.equals(vec)) return true;
     return false;
   }
 

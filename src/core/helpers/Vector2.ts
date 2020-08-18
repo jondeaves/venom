@@ -27,4 +27,8 @@ export default class Vector2 implements Vector2Position {
   public static get zero(): Vector2 {
     return new Vector2(0, 0);
   }
+
+  public equals(vec: Vector2): boolean {
+    return this.x === vec.x && this.y === vec.y;
+  }
 }
