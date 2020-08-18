@@ -4,43 +4,29 @@ import { getRepository } from 'typeorm';
 import roguelike from 'roguelike/level/roguelike';
 import random from 'roguelike/utility/random';
 
-import ConfigService from '../../core/services/config.service';
-import DatabaseService from '../../core/services/database.service';
-import MongoService from '../../core/services/mongo.service';
-
 import Vector2 from '../../core/helpers/Vector2';
-
-import container from '../../inversity.config';
 
 import Campaign from '../../carp/campaign/campaign.entity';
 import Character from '../../carp/character/character.entity';
 import Monster from '../../carp/character/monster.entity';
 
-import ICommand from './ICommand';
+import Command from './Command';
 
-const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
+export default class CampaignCommand extends Command {
+  public commandData: {
+    commandList: Discord.Collection<string, Command>;
+    prefix: string;
+  };
 
-const command: ICommand = {
-  name: 'campaign',
-  aliases: ['rpg'],
-  description: 'Manages campaign settings such as starting a campaign and stopping a campaign.',
-  example: `\`${prefix}campaign start`,
-  async execute(
-    message: Discord.Message,
-    args: string[],
-    _prefix?: string,
-    _commands?: Collection<string, ICommand>,
-    _mongoService?: MongoService,
-    dbService?: DatabaseService,
-  ) {
+  async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
     const moderatorPermission = message.member.roles.cache.has(
-      container.resolve<ConfigService>(ConfigService).get('CAMPAIGN_MODERATOR_ROLE_ID'),
+      this.dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'),
     );
     if (args[0]) {
       switch (args[0]) {
         default:
           return message.reply(
-            `it looks like that sub-command is not something I can handle. Try \`${prefix}check <channel>\` if you want to know if a campaign is active, or simply \`${prefix}campaign\` for status!`,
+            `it looks like that sub-command is not something I can handle. Try \`${this.commandData.prefix}check <channel>\` if you want to know if a campaign is active, or simply \`${this.commandData.prefix}campaign\` for status!`,
           );
         case 'start': {
           if (!moderatorPermission) {
@@ -113,7 +99,7 @@ const command: ICommand = {
                 }
               }
             }
-            await dbService.manager.save(monstersDb);
+            await this.dependencies.databaseService.manager.save(monstersDb);
 
             const campaign = new Campaign();
             campaign.characters = [];
@@ -123,7 +109,7 @@ const command: ICommand = {
             campaign.dungeon = level;
 
             message.reply(`debug: distributed ${monsters} monsters over ${level.room_count} rooms.`);
-            await dbService.manager.save(campaign);
+            await this.dependencies.databaseService.manager.save(campaign);
             return message.reply(`${args[1]} has begun a campaign! To join, create a character first.`);
           }
           return message.reply(`don't forget to assign a channel!`);
@@ -157,10 +143,10 @@ const command: ICommand = {
               return message.reply(`that channel doesn't exist.`);
             }
 
-            const matchedChar = await dbService.manager.findOne(Character, message.author.id);
+            const matchedChar = await this.dependencies.databaseService.manager.findOne(Character, message.author.id);
             if (!matchedChar) {
               return message.reply(
-                `it looks like you don't have a character yet! Create one using \`${prefix}character create <name>\` and try again!`,
+                `it looks like you don't have a character yet! Create one using \`${this.commandData.prefix}character create <name>\` and try again!`,
               );
             }
 
@@ -179,14 +165,14 @@ const command: ICommand = {
 
                 matchedChar.position = new Vector2(currentMap.enter.x, currentMap.enter.y);
 
-                await dbService.manager.save(matchedChar);
+                await this.dependencies.databaseService.manager.save(matchedChar);
 
                 if (typeof campaign.characters === 'undefined' || campaign.characters === null) {
                   campaign.characters = [];
                 }
 
                 campaign.characters.push(matchedChar);
-                await dbService.manager.save(campaign);
+                await this.dependencies.databaseService.manager.save(campaign);
                 return message.reply(`you have joined the campaign with your character **${matchedChar.name}**!`);
               }
               return message.reply(`you already joined that campaign with your character **${matchedChar.name}**!`);
@@ -198,14 +184,12 @@ const command: ICommand = {
         }
       }
     } else {
-      const runningCampaigns = await dbService.manager.findAndCount(Campaign);
+      const runningCampaigns = await this.dependencies.databaseService.manager.findAndCount(Campaign);
       if (runningCampaigns[1] > 0) {
         return message.reply(`there are currently ${runningCampaigns[1]} campaigns active.`);
       }
       return message.reply(`there are currently no campaigns active.`);
     }
     return message.reply(`I'm not sure what happened, but your request failed.`);
-  },
-};
-
-export default command;
+  }
+}

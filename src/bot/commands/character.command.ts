@@ -1,32 +1,19 @@
-import Discord, { Collection } from 'discord.js';
+import Discord from 'discord.js';
 
-import ConfigService from '../../core/services/config.service';
-import DatabaseService from '../../core/services/database.service';
-import MongoService from '../../core/services/mongo.service';
-
-import container from '../../inversity.config';
+import Vector2 from '../../core/helpers/Vector2';
 
 import Character from '../../carp/character/character.entity';
 
-import ICommand from './ICommand';
-import Vector2 from '../../core/helpers/Vector2';
+import Command from './Command';
 
-const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
+export default class CharacterCommand extends Command {
+  public commandData: {
+    prefix: string;
+  };
 
-const command: ICommand = {
-  name: 'character',
-  aliases: ['c'],
-  description: 'Displays your character and its current statistics, if it exists.',
-  example: `\`${prefix}addgreeting Welcome to the club {name}\``,
-  async execute(
-    message: Discord.Message,
-    args: string[],
-    _prefix?: string,
-    _commands?: Collection<string, ICommand>,
-    _mongoService?: MongoService,
-    dbService?: DatabaseService,
-  ) {
-    const matchedChar = await dbService.manager.findOne(Character, message.author.id);
+  async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
+    const matchedChar = await this.dependencies.databaseService.manager.findOne(Character, message.author.id);
+
     if (args[0]) {
       switch (args[0]) {
         default:
@@ -36,7 +23,7 @@ const command: ICommand = {
           break;
         case 'delete':
           if (matchedChar) {
-            dbService.manager.delete(Character, message.author.id);
+            await this.dependencies.databaseService.manager.delete(Character, message.author.id);
             return message.reply(`your character **${matchedChar.name}** has been deleted!`);
           }
           break;
@@ -53,7 +40,7 @@ const command: ICommand = {
               character.current_health = 5;
               character.position = Vector2.zero;
               character.graphic = args[2] ?? `:slight_smile:`;
-              await dbService.manager.save(Character, character);
+              await this.dependencies.databaseService.manager.save(Character, character);
               return message.reply(`that's it! You now have a character named **${args[1]}**!`);
             }
             return message.reply(`you're gonna have to give me a character name, too!`);
@@ -67,9 +54,7 @@ const command: ICommand = {
       return message.reply(`your character **${matchedChar.name}** is alive and well.`);
     }
     return message.reply(
-      `it doesn't look like you have a character set up, yet. Run \`${prefix}character create <name>\` to get started.`,
+      `it doesn't look like you have a character set up, yet. Run \`${this.commandData.prefix}character create <name>\` to get started.`,
     );
-  },
-};
-
-export default command;
+  }
+}
