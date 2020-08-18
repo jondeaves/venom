@@ -24,12 +24,6 @@ export default class Bot {
   private setCommands(): void {
     const prefix = this._dependencies.configService.get('BOT_TRIGGER');
 
-    //   name: 'character',
-    //   aliases: ['c'],
-    //   description:
-    //     'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
-    //   example: `\`${prefix}addgreeting Welcome to the club {name}\``,
-
     // Load in our commands for the command handler
     // TODO: Refactor this into a CommandHandler class?
     const addGreetingCmd = new AddGreetingCommand(
