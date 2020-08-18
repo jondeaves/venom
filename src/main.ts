@@ -1,8 +1,7 @@
+import 'reflect-metadata';
 import dotenv from 'dotenv';
 import { exit } from 'process';
 import path from 'path';
-
-import 'reflect-metadata';
 
 import App from './app';
 

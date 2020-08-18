@@ -9,6 +9,7 @@ import container from '../../inversity.config';
 import Character from '../../carp/character/character.entity';
 
 import ICommand from './ICommand';
+import Vector2 from '../../core/types/Vector2';
 
 const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
 
@@ -50,7 +51,7 @@ const command: ICommand = {
               character.defense = 1;
               character.max_health = 5;
               character.current_health = 5;
-              character.position = { x: 0, y: 0 };
+              character.position = Vector2.zero;
               character.graphic = args[2] ?? `:slight_smile:`;
               await dbService.manager.save(Character, character);
               return message.reply(`that's it! You now have a character named **${args[1]}**!`);

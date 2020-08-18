@@ -1,13 +1,12 @@
 import Discord, { Message } from 'discord.js';
 import random from 'roguelike/utility/random';
 import Map from './types/Map';
+import Vector2 from '../core/types/Vector2';
 
 import container from '../inversity.config';
 
 import ConfigService from '../core/services/config.service';
 import DatabaseService from '../core/services/database.service';
-
-import Vector2 from '../core/types/Vector2';
 
 import Campaign from './campaign/campaign.entity';
 import Character from './character/character.entity';
@@ -400,7 +399,7 @@ export default class CampaignManager {
       const anyPlayerhere = this.isAnyPlayerHere(newPos);
       if (!anyPlayerhere) {
         const updMonster = monster;
-        updMonster.position = { x: newPos.x, y: newPos.y };
+        updMonster.position = new Vector2(newPos.x, newPos.y);
         this._databaseService.manager.save(updMonster);
       }
     }

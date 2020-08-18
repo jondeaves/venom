@@ -4,6 +4,7 @@ import { getRepository } from 'typeorm';
 import roguelike from 'roguelike/level/roguelike';
 import random from 'roguelike/utility/random';
 
+import Vector2 from 'src/core/types/Vector2';
 import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
 import MongoService from '../../core/services/mongo.service';
@@ -102,7 +103,7 @@ const command: ICommand = {
                       mon.max_health = 1;
                       mon.power = 1;
                       mon.defense = 0;
-                      mon.position = { x: randomX, y: randomY };
+                      mon.position = Vector2.zero;
                       mon.graphic = `:ghost:`;
                       monstersDb.push(mon);
                       monsters += 1;
@@ -175,7 +176,7 @@ const command: ICommand = {
               if (!alreadyJoined) {
                 const currentMap = JSON.parse(campaign.dungeon);
 
-                matchedChar.position = { x: currentMap.enter.x, y: currentMap.enter.y };
+                matchedChar.position = new Vector2(currentMap.enter.x, currentMap.enter.y);
 
                 await dbService.manager.save(matchedChar);
 
