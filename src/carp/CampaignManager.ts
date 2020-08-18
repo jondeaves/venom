@@ -6,7 +6,8 @@ import container from '../inversity.config';
 
 import ConfigService from '../core/services/config.service';
 import DatabaseService from '../core/services/database.service';
-import LoggerService from '../core/services/logger.service';
+
+import Vector2 from '../core/types/Vector2';
 
 import Campaign from './campaign/campaign.entity';
 import Character from './character/character.entity';
@@ -15,17 +16,12 @@ import Monster from './character/monster.entity';
 export default class CampaignManager {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
 
-  private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
-
   private _databaseService: DatabaseService;
-
-  private _discordClient: Discord.Client;
 
   private _campaign: Campaign;
 
   constructor(databaseService: DatabaseService, discordClient: Discord.Client, campaign: Campaign) {
     this._databaseService = databaseService;
-    this._discordClient = discordClient;
     this._campaign = campaign;
   }
 
