@@ -164,7 +164,7 @@ export default class Bot {
     const prefix = this._dependencies.configService.get('BOT_TRIGGER');
     const result = await campaignRepository.find({
       where: { roomId: message.channel.id },
-      relations: ['characters'],
+      relations: ['characters', 'monsters'],
     });
 
     if (!result || result.length === 0) {
