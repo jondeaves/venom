@@ -146,7 +146,7 @@ export default class Bot {
   private async handleRPG(message: Discord.Message): Promise<boolean> {
     // Check if this is for an rpg campaign first
     const campaignRepository = getRepository(Campaign);
-    const prefix = this._configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
     const result = await campaignRepository.find({
       where: { roomId: message.channel.id },
       relations: ['characters'],
@@ -165,14 +165,14 @@ export default class Bot {
       );
     } else {
       // Pass through to campaign manager
-      const campaignManager = new CampaignManager(this._databaseService, this._discordClient, campaign);
+      const campaignManager = new CampaignManager(this._dependencies, campaign);
       await campaignManager.execute(message);
     }
     return true;
   }
 
   private async handleBot(message: Discord.Message): Promise<void> {
-    const prefix = this._configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
 
     // If the message either doesn't start with the prefix or was sent by a bot, exit early.
     if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) {

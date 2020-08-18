@@ -1,32 +1,29 @@
 import Discord, { Message } from 'discord.js';
 import random from 'roguelike/utility/random';
-import Map from './types/Map';
+
 import Vector2 from '../core/helpers/Vector2';
 
-import container from '../inversity.config';
-
-import ConfigService from '../core/services/config.service';
-import DatabaseService from '../core/services/database.service';
+import Dependencies from '../core/types/Dependencies';
 
 import Campaign from './campaign/campaign.entity';
 import Character from './character/character.entity';
 import Monster from './character/monster.entity';
 
-export default class CampaignManager {
-  private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
+import Map from './types/Map';
 
-  private _databaseService: DatabaseService;
+export default class CampaignManager {
+  private _dependencies: Dependencies;
 
   private _campaign: Campaign;
 
-  constructor(databaseService: DatabaseService, discordClient: Discord.Client, campaign: Campaign) {
-    this._databaseService = databaseService;
+  constructor(dependencies: Dependencies, campaign: Campaign) {
+    this._dependencies = dependencies;
     this._campaign = campaign;
   }
 
   public async execute(message: Message): Promise<void> {
-    const prefix = this._configService.get('CAMPAIGN_TRIGGER');
-    const modRoleID = this._configService.get('CAMPAIGN_MODERATOR_ROLE_ID');
+    const prefix = this._dependencies.configService.get('CAMPAIGN_TRIGGER');
+    const modRoleID = this._dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID');
     const hasModPermissions = message.member.roles.cache.has(modRoleID);
 
     const matchedCharIndex = this._campaign.characters.findIndex((char) => char.uid === message.author.id);
@@ -64,7 +61,7 @@ export default class CampaignManager {
         }
         case 'stop':
           if (hasModPermissions) {
-            this._databaseService.manager.delete(Campaign, this._campaign.id);
+            this._dependencies.databaseService.manager.delete(Campaign, this._campaign.id);
             message.channel.send(`The campaign has ended!`);
           } else {
             message.reply(
@@ -75,7 +72,7 @@ export default class CampaignManager {
         case 'leave': {
           if (matchedCharIndex >= 0) {
             this._campaign.characters.splice(matchedCharIndex, 1);
-            this._databaseService.manager.save(this._campaign);
+            this._dependencies.databaseService.manager.save(this._campaign);
             message.reply(`your character **${matchedChar.name}** has left the campaign.`);
             return;
           }
@@ -134,7 +131,7 @@ export default class CampaignManager {
                 }
                 break;
             }
-            await this._databaseService.manager.save(matchedChar);
+            await this._dependencies.databaseService.manager.save(matchedChar);
             await this.monsterTurn(message.channel, currentMap);
           }
           break;
@@ -207,7 +204,7 @@ export default class CampaignManager {
               const char = this.isPlayer(allChar, nextArgs);
               const mon = this.isMonster(allMons, nextArgs);
               if (char) {
-                const examine = await this._databaseService.manager.findOne(Character, char);
+                const examine = await this._dependencies.databaseService.manager.findOne(Character, char);
                 message.channel.send(`> **${matchedChar.name}** examines **${examine.name}**.`);
                 const extraInfo = [];
                 if (examine.power > matchedChar.defense) extraInfo.push('They look pretty powerful.');
@@ -255,7 +252,7 @@ export default class CampaignManager {
               if (char.current_health <= 0) {
                 message.channel.send(`> **${char.name}** lets out a deathly scream and drops dead on the floor.`);
               }
-              await this._databaseService.manager.save(char);
+              await this._dependencies.databaseService.manager.save(char);
               break;
             } else if (mon) {
               if (
@@ -271,7 +268,7 @@ export default class CampaignManager {
                   );
                   const matchedMonIndex = this._campaign.monsters.findIndex((m) => m.id === mon.id);
                   this._campaign.monsters.splice(matchedMonIndex, 1);
-                  await this._databaseService.manager.save(this._campaign);
+                  await this._dependencies.databaseService.manager.save(this._campaign);
                   // TODO: add exp, level up, etc
                   break;
                 }
@@ -386,7 +383,7 @@ export default class CampaignManager {
           break;
       }
     });
-    await this._databaseService.manager.save(this._campaign);
+    await this._dependencies.databaseService.manager.save(this._campaign);
   }
 
   updateMonsterPos(map: Map, newPos: Vector2, monster: Monster): void {
@@ -402,7 +399,7 @@ export default class CampaignManager {
       if (!anyPlayerhere) {
         const updMonster = monster;
         updMonster.position = new Vector2(newPos.x, newPos.y);
-        this._databaseService.manager.save(updMonster);
+        this._dependencies.databaseService.manager.save(updMonster);
       }
     }
   }
