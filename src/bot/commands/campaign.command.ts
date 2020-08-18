@@ -74,27 +74,23 @@ export default class CampaignCommand extends Command {
                 const roll = random.dice('d20');
                 const hasMonster = roll > 1;
                 if (hasMonster) {
-                  // let's set the X/Y value of a random spot in this room to 99, a debug id
                   const randomX = randomRoom.left + Math.floor(Math.random() * randomRoom.width);
                   const randomY = randomRoom.top + Math.floor(Math.random() * randomRoom.height);
                   if (randomX < level.width && randomY < level.height) {
-                    if (level.world[randomY][randomX] === 99) {
-                      count -= 1; // try again
-                    } else {
-                      // TODO: should make a look-up database for archetypes
-                      const mon = new Monster();
-                      mon.name = `Ghost ${monsters + 1}`;
-                      mon.level = 1;
-                      mon.expvalue = 50;
-                      mon.current_health = 1;
-                      mon.max_health = 1;
-                      mon.power = 1;
-                      mon.defense = 0;
-                      mon.position = new Vector2(randomX, randomY);
-                      mon.graphic = `:ghost:`;
-                      monstersDb.push(mon);
-                      monsters += 1;
-                    }
+                    if (monstersDb.find((m) => m.position === new Vector2(randomX, randomY))) count -= 1;
+                    // TODO: should make a look-up database for archetypes
+                    const mon = new Monster();
+                    mon.name = `Ghost ${monsters + 1}`;
+                    mon.level = 1;
+                    mon.expvalue = 50;
+                    mon.current_health = 1;
+                    mon.max_health = 1;
+                    mon.power = 1;
+                    mon.defense = 0;
+                    mon.position = new Vector2(randomX, randomY);
+                    mon.graphic = `:ghost:`;
+                    monstersDb.push(mon);
+                    monsters += 1;
                   }
                 }
               }

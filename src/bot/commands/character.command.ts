@@ -13,12 +13,13 @@ export default class CharacterCommand extends Command {
 
   async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
     const matchedChar = await this.dependencies.databaseService.manager.findOne(Character, message.author.id);
-
     if (args[0]) {
       switch (args[0]) {
         default:
           if (matchedChar) {
-            return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+            return message.reply(
+              `your character **${matchedChar.name}** is alive and well.\nYou are assigned the graphic: ${matchedChar.graphic}.`,
+            );
           }
           break;
         case 'delete':
@@ -51,7 +52,9 @@ export default class CharacterCommand extends Command {
       }
     }
     if (matchedChar) {
-      return message.reply(`your character **${matchedChar.name}** is alive and well.`);
+      return message.reply(
+        `your character **${matchedChar.name}** is alive and well.\nYou are assigned the graphic: ${matchedChar.graphic}.`,
+      );
     }
     return message.reply(
       `it doesn't look like you have a character set up, yet. Run \`${this.commandData.prefix}character create <name>\` to get started.`,

@@ -30,8 +30,8 @@ export default class Monster {
   @Column({
     type: 'json',
     transformer: {
-      to: (value: string): Vector2 => Vector2.fromJSON(value),
-      from: (value: Vector2): string => value.toJSON(),
+      from: (value: string): Vector2 => Vector2.fromJSON(value),
+      to: (value: Vector2): string => value.toJSON(),
     },
   })
   position: Vector2;

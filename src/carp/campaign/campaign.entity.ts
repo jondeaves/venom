@@ -22,8 +22,8 @@ export default class Campaign {
   @Column({
     type: 'json',
     transformer: {
-      to: (value: string): Map => Map.fromJSON(value),
-      from: (value: Map): string => value.toJSON(),
+      from: (value: string): Map => Map.fromJSON(value),
+      to: (value: Map): string => value.toJSON(),
     },
   })
   dungeon: Map;
