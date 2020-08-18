@@ -1,12 +1,8 @@
 import Discord from 'discord.js';
+import Command from './Command';
 
-import ICommand from './ICommand';
-
-const command: ICommand = {
-  name: '8ball',
-  aliases: ['eightball', 'magicball', 'ball', 'wisdomball'],
-  description: 'Ask the magic eightball for advice!',
-  async execute(message: Discord.Message, args: string[]) {
+export default class EightBallCommand extends Command {
+  async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
     if (args.length === 0) {
       return message.reply("where's the question?");
     }
@@ -37,8 +33,7 @@ const command: ICommand = {
       'yes - definitely.',
       'yeah, you can rely on it.',
     ];
-    return message.reply(responses[Math.floor(Math.random() * responses.length - 1)]);
-  },
-};
 
-export default command;
+    return message.reply(responses[Math.floor(Math.random() * responses.length - 1)]);
+  }
+}

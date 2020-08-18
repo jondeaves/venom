@@ -1,42 +1,44 @@
-import { injectable } from 'inversify';
 import mongodb, { FilterQuery } from 'mongodb';
 import ConfigService from './config.service';
-// eslint-disable-next-line import/no-cycle
 import LoggerService from './logger.service';
-// eslint-disable-next-line import/no-cycle
-import container from '../../inversity.config';
 
-@injectable()
 export default class MongoService {
-  private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
-
-  private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
-
   private _mongoClient: mongodb.MongoClient;
 
   public _db: mongodb.Db;
+
+  constructor(private _configService: ConfigService, private _loggerService: LoggerService) {}
 
   public get dbInstance(): mongodb.Db {
     return this._db;
   }
 
-  public async connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  public async connect(): Promise<boolean> {
+    const prom = new Promise((resolve, reject) => {
       this._mongoClient = new mongodb.MongoClient(this._configService.get('MONGODB_URI'), { useUnifiedTopology: true });
 
-      this._mongoClient.connect((err) => {
-        if (err) {
-          this._loggerService.log('error', 'Venom could not connect to MongoDB', err);
-          reject();
+      this._mongoClient.connect((error) => {
+        if (error) {
+          reject(error);
         } else {
-          this._loggerService.log('info', 'Venom is connected to MongoDB');
-
           this._db = this._mongoClient.db(this._configService.get('MONGODB_DB_NAME'));
 
           resolve();
         }
       });
     });
+
+    try {
+      await prom;
+
+      this._loggerService.log('info', 'Venom is connected to MongoDB');
+
+      return true;
+    } catch (error) {
+      this._loggerService.log('error', 'Venom could not connect to MongoDB', error);
+
+      return false;
+    }
   }
 
   public disconnect(): void {

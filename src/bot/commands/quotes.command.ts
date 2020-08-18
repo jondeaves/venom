@@ -1,32 +1,17 @@
 import Discord from 'discord.js';
 import shortid from 'shortid';
+
 import MongoService from '../../core/services/mongo.service';
-import ConfigService from '../../core/services/config.service';
-import container from '../../inversity.config';
-import ICommand from './ICommand';
 
-interface Quote {
-  author: string;
-  quote: string;
-  shortId: string;
-  meta: {
-    authorCachedName: string;
-    createdBy: string;
-    createdByCachedName: string;
-    createdAt: Date;
-  };
-}
+import Quote from '../../core/types/Quote';
 
-const prefix = container.resolve<ConfigService>(ConfigService).get('BOT_TRIGGER');
+import Command from './Command';
 
-const command: ICommand = {
-  name: 'quotes',
-  aliases: ['quote', 'quotes', 'q'],
-  description: `Get random quotes from people in chat, or add quotes to the list.\n- \`${prefix}quote @author quote\` or \`${prefix}quote add @author quote\` - Adds "quote" by @author. @author can be Discord mention or any string that terminates with ' ' (space).\n- \`${prefix}quote search key words\` - Search "key words" and give you results of that quote.\n- \`${prefix}quote\` (with no arguments) - gets a random quote.\n- \`${prefix}quote #quoteId\` - Gets specific quote with ID #quoteId`,
-  async execute(message, args, _prefix, _commands, db) {
+export default class QuotesCommand extends Command {
+  async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
     // Get random quote
     if (args.filter((s) => s.trim().length).length === 0) {
-      getRandomQuote(message, args, db);
+      getRandomQuote(message, args, this.dependencies.mongoService);
       return;
     }
 
@@ -35,28 +20,28 @@ const command: ICommand = {
     switch (first) {
       // Search quotes
       case 'search':
-        searchQuotes(message, args.slice(1), db);
+        searchQuotes(message, args.slice(1), this.dependencies.mongoService);
         return;
 
       // Add quote
       case 'add':
       default:
         if (first.startsWith('#')) {
-          getSingleQuote(message, args, db);
+          getSingleQuote(message, args, this.dependencies.mongoService);
         } else {
-          addNewQuote(message, args.slice(first === 'add' ? 1 : 0), db);
+          addNewQuote(message, args.slice(first === 'add' ? 1 : 0), this.dependencies.mongoService);
         }
     }
-  },
-};
+  }
+}
 
 const clean = (str: string): string => str.replace(/[\t\n|]+/g, ' ').replace(/\s+/g, ' ');
 const getQuoteStr = ({ author, quote, shortId }: Quote): string => `"${quote}" - ${author} (#${shortId})`;
 
-async function getRandomQuote(message: Discord.Message, args: string[], db: MongoService): Promise<void> {
-  const count = await db.count(message.author.id, 'quotes', {});
+async function getRandomQuote(message: Discord.Message, args: string[], mongoService: MongoService): Promise<void> {
+  const count = await mongoService.count(message.author.id, 'quotes', {});
   const r = Math.floor(Math.random() * count);
-  const q = await db.dbInstance.collection('quotes').find().skip(r).limit(1).toArray();
+  const q = await mongoService.dbInstance.collection('quotes').find().skip(r).limit(1).toArray();
 
   if (q.length > 0) {
     const quote: Quote = q[0];
@@ -66,8 +51,8 @@ async function getRandomQuote(message: Discord.Message, args: string[], db: Mong
   }
 }
 
-async function searchQuotes(message: Discord.Message, args: string[], db: MongoService): Promise<void> {
-  const q = await db.find<Quote>(message.author.id, 'quotes', {
+async function searchQuotes(message: Discord.Message, args: string[], mongoService: MongoService): Promise<void> {
+  const q = await mongoService.find<Quote>(message.author.id, 'quotes', {
     quote: {
       $regex: `${args.join(' ')}`,
       $options: 'i',
@@ -86,7 +71,7 @@ async function searchQuotes(message: Discord.Message, args: string[], db: MongoS
   }
 }
 
-async function addNewQuote(message: Discord.Message, args: string[], db: MongoService): Promise<void> {
+async function addNewQuote(message: Discord.Message, args: string[], mongoService: MongoService): Promise<void> {
   const [authorRaw, ...restRaw] = args;
   const hasAuthor = /<@!\d+>/.test(authorRaw) || authorRaw.startsWith('@');
   const author = hasAuthor ? (authorRaw.startsWith('@') ? authorRaw.slice(1) : authorRaw) : 'Anonymous';
@@ -135,13 +120,13 @@ async function addNewQuote(message: Discord.Message, args: string[], db: MongoSe
   };
 
   const quoteStr = getQuoteStr(quoteObj);
-  db.insert(message.author.id, 'quotes', [quoteObj]);
+  mongoService.insert(message.author.id, 'quotes', [quoteObj]);
   message.reply(`${replies[Math.floor(Math.random() * replies.length)]}\n${quoteStr}`);
 }
 
-async function getSingleQuote(message: Discord.Message, args: string[], db: MongoService): Promise<void> {
+async function getSingleQuote(message: Discord.Message, args: string[], mongoService: MongoService): Promise<void> {
   const id = args[0].slice(1);
-  const quote = await db.findOne<Quote>(message.author.id, 'quotes', { shortId: id });
+  const quote = await mongoService.findOne<Quote>(message.author.id, 'quotes', { shortId: id });
 
   if (!quote) {
     message.reply("I'm sorry, I couldn't find a quote with that id!");
@@ -150,5 +135,3 @@ async function getSingleQuote(message: Discord.Message, args: string[], db: Mong
 
   message.reply(getQuoteStr(quote));
 }
-
-export default command;

@@ -13,6 +13,8 @@ import path from 'path';
 import HttpService from 'src/core/services/http.service';
 import cheerio from 'cheerio';
 import { Quote } from './IQuote';
+import LoggerService from '../../core/services/logger.service';
+import ConfigService from '../../core/services/config.service';
 
 const PAGE_SIZE = 15;
 const MAX_PAGE = 35;
@@ -31,7 +33,9 @@ async function run(): Promise<void> {
   });
 
   const promises: Array<Promise<Quote[]>> = [];
-  const http = new HttpService();
+  const configService = new ConfigService();
+  const loggerService = new LoggerService(configService);
+  const http = new HttpService(loggerService);
 
   for (let i = 0; i < PAGE_SIZE * MAX_PAGE; i += PAGE_SIZE) {
     const urlWithPage = `${url}&st=${i}`;
