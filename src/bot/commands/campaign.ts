@@ -93,6 +93,7 @@ const command: ICommand = {
                     if (level.world[randomY][randomX] === 99) {
                       count -= 1; // try again
                     } else {
+                      // TODO: should make a look-up database for archetypes
                       const mon = new Monster();
                       mon.name = `Ghost ${monsters + 1}`;
                       mon.level = 1;
@@ -101,7 +102,8 @@ const command: ICommand = {
                       mon.max_health = 1;
                       mon.power = 1;
                       mon.defense = 0;
-                      mon.position = JSON.stringify({ x: randomX, y: randomY });
+                      mon.position = { x: randomX, y: randomY };
+                      mon.graphic = `:ghost:`;
                       monstersDb.push(mon);
                       monsters += 1;
                     }
@@ -172,12 +174,9 @@ const command: ICommand = {
 
               if (!alreadyJoined) {
                 const currentMap = JSON.parse(campaign.dungeon);
-                const myPos = JSON.parse(matchedChar.position);
 
-                myPos.x = currentMap.enter.x;
-                myPos.y = currentMap.enter.y;
+                matchedChar.position = { x: currentMap.enter.x, y: currentMap.enter.y };
 
-                matchedChar.position = JSON.stringify(myPos);
                 await dbService.manager.save(matchedChar);
 
                 if (typeof campaign.characters === 'undefined' || campaign.characters === null) {

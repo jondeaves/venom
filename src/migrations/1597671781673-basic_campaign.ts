@@ -5,10 +5,10 @@ export class basicCampaign1597671781673 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "character" ("uid" character varying NOT NULL, "name" character varying NOT NULL, "max_health" integer NOT NULL, "current_health" integer NOT NULL, "power" integer NOT NULL, "defense" integer NOT NULL, "position" character varying NOT NULL, CONSTRAINT "PK_1e68e7ffd5c106af49c1317e375" PRIMARY KEY ("uid"))`,
+      `CREATE TABLE "character" ("uid" character varying NOT NULL, "name" character varying NOT NULL, "max_health" integer NOT NULL, "current_health" integer NOT NULL, "power" integer NOT NULL, "defense" integer NOT NULL, "position" character varying NOT NULL, "graphic" character varying NOT NULL, CONSTRAINT "PK_1e68e7ffd5c106af49c1317e375" PRIMARY KEY ("uid"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "monster" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "level" integer NOT NULL, "expvalue" integer NOT NULL, "max_health" integer NOT NULL, "current_health" integer NOT NULL, "power" integer NOT NULL, "defense" integer NOT NULL, "position" character varying NOT NULL, CONSTRAINT "PK_9d95b6eedf1fbbea6b329b91f81" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "monster" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "level" integer NOT NULL, "expvalue" integer NOT NULL, "max_health" integer NOT NULL, "current_health" integer NOT NULL, "power" integer NOT NULL, "defense" integer NOT NULL, "position" character varying NOT NULL, "graphic" character varying NOT NULL, CONSTRAINT "PK_9d95b6eedf1fbbea6b329b91f81" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "campaign" ("id" SERIAL NOT NULL, "roomId" character varying NOT NULL, "dungeon" character varying NOT NULL, CONSTRAINT "PK_0ce34d26e7f2eb316a3a592cdc4" PRIMARY KEY ("id"))`,

@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
+type Vector2 = { x: number; y: number };
+
 @Entity()
 export default class Character {
   @PrimaryColumn({ unique: true })
@@ -20,6 +22,14 @@ export default class Character {
   @Column()
   defense: number;
 
+  @Column({
+    transformer: {
+      to: (value: string): Vector2 => JSON.parse(value),
+      from: (value: Vector2): string => JSON.stringify(value),
+    },
+  })
+  position: { x: number; y: number };
+
   @Column()
-  position: string;
+  graphic: string;
 }
