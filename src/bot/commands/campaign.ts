@@ -4,10 +4,11 @@ import { getRepository } from 'typeorm';
 import roguelike from 'roguelike/level/roguelike';
 import random from 'roguelike/utility/random';
 
-import Vector2 from 'src/core/types/Vector2';
 import ConfigService from '../../core/services/config.service';
 import DatabaseService from '../../core/services/database.service';
 import MongoService from '../../core/services/mongo.service';
+
+import Vector2 from '../../core/types/Vector2';
 
 import container from '../../inversity.config';
 
@@ -103,7 +104,7 @@ const command: ICommand = {
                       mon.max_health = 1;
                       mon.power = 1;
                       mon.defense = 0;
-                      mon.position = Vector2.zero;
+                      mon.position = new Vector2(randomX, randomY);
                       mon.graphic = `:ghost:`;
                       monstersDb.push(mon);
                       monsters += 1;
