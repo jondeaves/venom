@@ -1,20 +1,14 @@
-import { injectable } from 'inversify';
 import path from 'path';
 import winston from 'winston';
 
-// eslint-disable-next-line import/no-cycle
-import container from '../../inversity.config';
 import LogLevel from '../types/LogLevel';
 
 import ConfigService from './config.service';
 
-@injectable()
 export default class LoggerService {
-  private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
-
   private _logger: winston.Logger;
 
-  constructor() {
+  constructor(private _configService: ConfigService) {
     this._logger = winston.createLogger({
       level: this._configService.get('LOG_LEVEL'),
       format: winston.format.json(),

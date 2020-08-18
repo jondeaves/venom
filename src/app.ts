@@ -1,44 +1,65 @@
 import { exit } from 'process';
 
-import container from './inversity.config';
-
 import ConfigService from './core/services/config.service';
 import DatabaseService from './core/services/database.service';
+import HttpService from './core/services/http.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
+
+import Dependencies from './core/types/Dependencies';
 
 import Bot from './bot/Bot';
 
 export default class App {
-  private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
+  private _dependencies: Dependencies;
 
-  private _loggerService: LoggerService = container.resolve<LoggerService>(LoggerService);
+  // eslint-disable-next-line class-methods-use-this
+  public async start(): Promise<void> {
+    await this.loadDependencies();
 
-  private _mongoService: MongoService = container.resolve<MongoService>(MongoService);
-
-  private _databaseService: DatabaseService = container.resolve<DatabaseService>(DatabaseService);
-
-  private _bot: Bot;
-
-  public async init(): Promise<void> {
-    try {
-      await this._mongoService.connect();
-      await this._databaseService.connect();
-    } catch (error) {
-      this._loggerService.log('error', 'Cannot connect to database, exiting.', { error });
-      exit(1);
-    }
+    const bot = new Bot(this._dependencies);
 
     try {
-      this._bot = new Bot(this._configService, this._loggerService, this._mongoService, this._databaseService);
-      await this._bot.bind();
+      await bot.bind();
+      this._dependencies.loggerService.log('info', 'Application started');
     } catch {
       exit(1);
     }
   }
 
+  private async loadDependencies(): Promise<void> {
+    // Create the services
+    const configService = new ConfigService();
+    const loggerService = new LoggerService(configService);
+    const databaseService = new DatabaseService(configService, loggerService);
+    const httpService = new HttpService(loggerService);
+    const mongoService = new MongoService(configService, loggerService);
+
+    // Load the async stuff
+    if (!(await databaseService.connect())) {
+      exit(1);
+    }
+
+    if (!(await mongoService.connect())) {
+      exit(1);
+    }
+
+    this._dependencies = {
+      configService,
+      databaseService,
+      httpService,
+      loggerService,
+      mongoService,
+    };
+  }
+
   public exit(): void {
-    this._mongoService.disconnect();
-    this._databaseService.disconnect();
+    if (this._dependencies.mongoService) {
+      this._dependencies.mongoService.disconnect();
+    }
+
+    if (this._dependencies.databaseService) {
+      this._dependencies.databaseService.disconnect();
+    }
   }
 }

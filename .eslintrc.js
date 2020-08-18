@@ -47,6 +47,8 @@ module.exports = {
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-nested-ternary': 'off',
     'no-underscore-dangle': ['error', { allowAfterThis: true }],
+    'class-methods-use-this': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
   },
   overrides: [
     {
