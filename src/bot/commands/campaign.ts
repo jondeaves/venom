@@ -172,7 +172,7 @@ const command: ICommand = {
 
             if (result.length > 0) {
               const campaign = result[0];
-              const alreadyJoined = campaign.characters.filter((e) => e.name === matchedChar.name).length > 0;
+              const alreadyJoined = campaign.characters.some((char) => char.name === matchedChar.name);
 
               if (!alreadyJoined) {
                 const currentMap = JSON.parse(campaign.dungeon);
