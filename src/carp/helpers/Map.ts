@@ -60,6 +60,6 @@ export default class Map implements MapObject {
   }
 
   public isNull(): boolean {
-    return this.width === 0 && this.height === 0;
+    return this.width === 0 || this.height === 0;
   }
 }
