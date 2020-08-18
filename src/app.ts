@@ -1,4 +1,3 @@
-import Discord, { Message } from 'discord.js';
 import { exit } from 'process';
 import { getRepository } from 'typeorm';
 
@@ -9,11 +8,7 @@ import DatabaseService from './core/services/database.service';
 import LoggerService from './core/services/logger.service';
 import MongoService from './core/services/mongo.service';
 
-import CampaignManager from './carp/CampaignManager';
-import Campaign from './carp/campaign/campaign.entity';
-
-import rawCommands from './bot/commands';
-import ICommand from './bot/commands/ICommand';
+import Bot from './bot/Bot';
 
 export default class App {
   private _configService: ConfigService = container.resolve<ConfigService>(ConfigService);
@@ -24,7 +19,7 @@ export default class App {
 
   private _databaseService: DatabaseService = container.resolve<DatabaseService>(DatabaseService);
 
-  private _discordClient: Discord.Client;
+  private _bot: Bot;
 
   public async init(): Promise<void> {
     try {
@@ -35,55 +30,12 @@ export default class App {
       exit(1);
     }
 
-    this._discordClient = new Discord.Client();
-    const commandList = new Discord.Collection<string, ICommand>();
-
-    rawCommands.forEach((rawCommand) => {
-      commandList.set(rawCommand.name, rawCommand);
-    });
-
-    // Triggers once after connecting to server
-    this._discordClient.once('ready', () => {
-      this._loggerService.log('info', 'Venom is connected to the Discord server');
-    });
-
-    // Triggers on every message the bot can see
-    this._discordClient.on('message', async (message) => {
-      if (!message.author.bot) {
-        const isRPG = await this.handleRPG(message);
-
-        if (!isRPG) {
-          this.handleBot(message, commandList);
-        }
-      }
-    });
-
-    this._discordClient.on('guildMemberAdd', (member) => {
-      // base
-      const greetings = ['Hello, {name}! CA greets you!', 'Welcome to CA, {name}!', 'Hi {name}! Welcome to CA!'];
-      const greeting = greetings[Math.floor(Math.random() * greetings.length - 1)];
-      // favor
-      const flavors = [
-        'As PROMISED, grab a free pie! Courtesy of {random}!',
-        'The water is pure here! You should ask {random} for their water purified water for a sip!',
-        'Home of the sane, the smart and {random}!',
-      ];
-      const randomMember = member.guild.members.cache.random();
-      const flavor = flavors[Math.floor(Math.random() * flavors.length - 1)];
-      // result
-      member.guild.systemChannel.send(
-        `${greeting.replace('{name}', member.displayName)} ${flavor.replace('{random}', randomMember.displayName)}`,
-      );
-    });
-
-    this._discordClient.login(this._configService.get('DISCORD_BOT_TOKEN')).catch((error) => {
-      this._loggerService.log(
-        'error',
-        `Cannot initialise Discord client. Check the token: ${this._configService.get('DISCORD_BOT_TOKEN')}`,
-        { error },
-      );
+    try {
+      this._bot = new Bot(this._configService, this._loggerService, this._mongoService, this._databaseService);
+      await this._bot.bind();
+    } catch {
       exit(1);
-    });
+    }
   }
 
   public exit(): void {

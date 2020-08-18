@@ -45,6 +45,7 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/filename-case': 'off',
     'unicorn/no-fn-reference-in-iterator': 'off',
+    'unicorn/no-nested-ternary': 'off',
     'no-underscore-dangle': ['error', { allowAfterThis: true }],
     'class-methods-use-this': 'off',
   },
