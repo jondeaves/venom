@@ -1,4 +1,4 @@
-export default interface Map {
+export default interface MapObject {
   width: number;
   height: number;
   enter: { x: number; y: number; room_id: number };

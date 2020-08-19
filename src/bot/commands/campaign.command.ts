@@ -7,11 +7,12 @@ import random from 'roguelike/utility/random';
 import Vector2 from '../../core/helpers/Vector2';
 
 import Campaign from '../../carp/campaign/campaign.entity';
-import Monster from '../../carp/character/monster.entity';
 
 import Command from './Command';
 import Map from '../../carp/helpers/Map';
 import Player from '../../carp/character/player.entity';
+import Ghost from '../../carp/monsters/Ghost';
+import Rat from '../../carp/monsters/Rat';
 
 export default class CampaignCommand extends Command {
   public commandData: {
@@ -80,16 +81,14 @@ export default class CampaignCommand extends Command {
                   if (randomX < level.width && randomY < level.height) {
                     if (monstersDb.find((m) => m.position === new Vector2(randomX, randomY))) count -= 1;
                     // TODO: should make a look-up database for archetypes
-                    const mon = new Monster();
-                    mon.name = `Ghost ${monsters + 1}`;
-                    mon.level = 1;
-                    mon.expvalue = 50;
-                    mon.current_health = 1;
-                    mon.max_health = 1;
-                    mon.power = 1;
-                    mon.defense = 0;
-                    mon.position = new Vector2(randomX, randomY);
-                    mon.graphic = `:ghost:`;
+                    const randMonster = random.dice('d2');
+                    let mon;
+                    if (randMonster === 1) {
+                      mon = new Ghost(1, new Vector2(randomX, randomY));
+                    } else if (randMonster === 2) {
+                      mon = new Rat(1, new Vector2(randomX, randomY));
+                    }
+
                     monstersDb.push(mon);
                     monsters += 1;
                   }
@@ -122,6 +121,7 @@ export default class CampaignCommand extends Command {
           return message.reply(`don't forget to assign a channel!`);
         }
         case 'check': {
+          const campaignRepository = getRepository(Campaign);
           if (args[1] && args[1].includes('#')) {
             const roomId = args[1].replace('<', '').replace('>', '').replace('#', '');
             const room = message.guild.channels.cache.find((channel) => channel.id === roomId);
@@ -130,7 +130,6 @@ export default class CampaignCommand extends Command {
               return message.reply(`that channel doesn't exist.`);
             }
 
-            const campaignRepository = getRepository(Campaign);
             const result = await campaignRepository.find({
               where: { roomId: room.id },
             });
@@ -138,6 +137,17 @@ export default class CampaignCommand extends Command {
               return message.reply(`yes, there is an active campaign in ${args[1]}!`);
             }
             return message.reply(`there is no active campaign in ${args[1]}!`);
+          }
+          const result = await campaignRepository.findAndCount();
+          if (result[1] > 0) {
+            const msg = [`there are ${result[1]} campaigns active:`];
+            // eslint-disable-next-line no-restricted-syntax
+            for (const campaign of result[0]) {
+              const room = message.guild.channels.cache.find((channel) => channel.id === campaign.roomId);
+              const characters = typeof campaign.characters === 'undefined' ? 0 : campaign.characters.length;
+              msg.push(`:scroll: ${room.toString()} (${characters} players)`);
+            }
+            return message.reply(msg);
           }
           return message.reply(`don't forget to give me a channel name to check.`);
         }
