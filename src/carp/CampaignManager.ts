@@ -88,6 +88,10 @@ export default class CampaignManager {
     message.reply(`unfortunately you have given up and cannot do that anymore.`);
   }
 
+  private winnerCommand(message: Discord.Message): void {
+    message.reply(`you won't need to do that - you've already escaped this time!`);
+  }
+
   private infoCommand(message: Discord.Message): void {
     message.channel.send(`Welcome to campaign ${this._campaign.id}`);
     message.channel.send(`There are ${this._campaign.characters.length} weary travellers.`);
@@ -97,6 +101,10 @@ export default class CampaignManager {
     const [matchedChar] = this.findCharInMessage(message);
     if (matchedChar.gameState === this.GameState.GivenUp) {
       this.givenUpCommand(message);
+      return;
+    }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
       return;
     }
     const currentMap = this._campaign.dungeon;
@@ -166,6 +174,10 @@ export default class CampaignManager {
       this.givenUpCommand(message);
       return;
     }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
+      return;
+    }
     if (matchedCharIndex >= 0) {
       matchedChar.gameState = this.GameState.GivenUp;
       message.reply(`your character **${matchedChar.name}** has given up...`);
@@ -179,6 +191,10 @@ export default class CampaignManager {
     const [matchedChar] = this.findCharInMessage(message);
     if (matchedChar.gameState === this.GameState.GivenUp) {
       this.givenUpCommand(message);
+      return;
+    }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
       return;
     }
     const currentMap = this._campaign.dungeon;
@@ -225,6 +241,10 @@ export default class CampaignManager {
     const [matchedChar] = this.findCharInMessage(message);
     if (matchedChar.gameState === this.GameState.GivenUp) {
       this.givenUpCommand(message);
+      return;
+    }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
       return;
     }
     if (args[1]) {
@@ -288,6 +308,10 @@ export default class CampaignManager {
       this.givenUpCommand(message);
       return;
     }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
+      return;
+    }
     const currentMap = this._campaign.dungeon;
 
     if (args[1] && args[1] === 'loc') {
@@ -333,6 +357,10 @@ export default class CampaignManager {
     const [matchedChar, charIndex, player] = this.findCharInMessage(message);
     if (matchedChar.gameState === this.GameState.GivenUp) {
       this.givenUpCommand(message);
+      return;
+    }
+    if (matchedChar.gameState === this.GameState.Finished) {
+      this.winnerCommand(message);
       return;
     }
     const currentMap = this._campaign.dungeon;
@@ -396,7 +424,15 @@ export default class CampaignManager {
           message.channel.send(`> **${matchedChar.name}** reached the exit and _leaves the asylum!_`);
           message.reply(`you are awarded **10 AP** for your escape!`);
           matchedChar.gameState = this.GameState.Finished; // finished
-          player.ap += 10;
+          const playerRepo = getRepository(Player);
+          const result = await playerRepo.find({
+            where: { uid: matchedChar.uid },
+            relations: ['characters'],
+          });
+          if (result.length > 0) {
+            result[0].ap += 10;
+            await this._dependencies.databaseService.manager.save(Player, result[0]);
+          }
         }
       }
       await this._dependencies.databaseService.manager.save(matchedChar);
