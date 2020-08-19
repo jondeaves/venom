@@ -1,4 +1,5 @@
 import Discord, { Message } from 'discord.js';
+import { getRepository } from 'typeorm';
 import random from 'roguelike/utility/random';
 
 import Vector2 from '../core/helpers/Vector2';
@@ -10,11 +11,18 @@ import Character from './character/character.entity';
 import Monster from './character/monster.entity';
 
 import Map from './helpers/Map';
+import Player from './character/player.entity';
 
 export default class CampaignManager {
   private _dependencies: Dependencies;
 
   private _campaign: Campaign;
+
+  GameState = {
+    Playing: 1,
+    Finished: 2,
+    GivenUp: 3,
+  };
 
   constructor(dependencies: Dependencies, campaign: Campaign) {
     this._dependencies = dependencies;
@@ -30,7 +38,6 @@ export default class CampaignManager {
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
 
-    // TODO: Handle commands better
     if (args[0]) {
       switch (args[0]) {
         default:
@@ -77,6 +84,10 @@ export default class CampaignManager {
     message.reply(`I don't recognize that command. Try again or type \`help\` for a list of commands.`);
   }
 
+  private givenUpCommand(message: Discord.Message): void {
+    message.reply(`unfortunately you have given up and cannot do that anymore.`);
+  }
+
   private infoCommand(message: Discord.Message): void {
     message.channel.send(`Welcome to campaign ${this._campaign.id}`);
     message.channel.send(`There are ${this._campaign.characters.length} weary travellers.`);
@@ -84,6 +95,10 @@ export default class CampaignManager {
 
   private lookCommand(message: Discord.Message): void {
     const [matchedChar] = this.findCharInMessage(message);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     const currentMap = this._campaign.dungeon;
 
     message.channel.send(`> **${matchedChar.name}** looks around.`);
@@ -101,22 +116,43 @@ export default class CampaignManager {
 
     const msg = [];
     msg.push(`> **${matchedChar.name}** stops for a moment to look at themselves.`);
-    msg.push(
-      `> HP: ${':heart:'.repeat(matchedChar.current_health)}${':broken_heart:'.repeat(
-        matchedChar.max_health - matchedChar.current_health,
-      )}`,
-    );
-    msg.push(`> :crossed_swords: ${matchedChar.power} :shield: ${matchedChar.defense}`);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      msg.push(`> Your thoughts are not your own, you are fated to roam the halls of the asylum forever.`);
+      msg.push(`> You have **given up**.`);
+    } else {
+      msg.push(
+        `> HP: ${':heart:'.repeat(matchedChar.current_health)}${':broken_heart:'.repeat(
+          matchedChar.max_health - matchedChar.current_health,
+        )}`,
+      );
+      msg.push(`> :crossed_swords: ${matchedChar.power} :shield: ${matchedChar.defense}`);
+    }
     message.channel.send(msg.join(`\n`));
   }
 
-  private stopCommand(message: Discord.Message): void {
+  private async stopCommand(message: Discord.Message): Promise<void> {
     const modRoleID = this._dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID');
     const hasModPermissions = message.member.roles.cache.has(modRoleID);
 
     if (hasModPermissions) {
-      this._dependencies.databaseService.manager.delete(Campaign, this._campaign.id);
-      message.channel.send(`The campaign has ended!`);
+      message.channel.send(
+        `> Hurrily, the escapees scramble to find an exit when an inexplicably bright light consumes the floor... `,
+      );
+      message.channel.send(`The campaign has **ended**! Thank you for participating!`);
+      message.channel.send(`All players are awarded **5 AP** for the effort to escape this asylum.`);
+
+      const playerRepo = getRepository(Player);
+      this._campaign.characters.forEach(async (char: Character) => {
+        const result = await playerRepo.find({
+          where: { uid: char.uid },
+          relations: ['characters'],
+        });
+        if (result.length > 0) {
+          result[0].ap += 5;
+          await this._dependencies.databaseService.manager.save(Player, result[0]);
+        }
+      });
+      await this._dependencies.databaseService.manager.delete(Campaign, this._campaign.id);
     } else {
       message.reply(
         `unfortunately you do not have permission to run that command. Contact a moderator to discuss your intentions.`,
@@ -124,13 +160,16 @@ export default class CampaignManager {
     }
   }
 
-  private leaveCommmand(message: Discord.Message): void {
+  private async leaveCommmand(message: Discord.Message): Promise<void> {
     const [matchedChar, matchedCharIndex] = this.findCharInMessage(message);
-
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     if (matchedCharIndex >= 0) {
-      this._campaign.characters.splice(matchedCharIndex, 1);
-      this._dependencies.databaseService.manager.save(this._campaign);
-      message.reply(`your character **${matchedChar.name}** has left the campaign.`);
+      matchedChar.gameState = this.GameState.GivenUp;
+      message.reply(`your character **${matchedChar.name}** has given up...`);
+      await this._dependencies.databaseService.manager.save(matchedChar);
       return;
     }
     message.reply(`I couldn't find your character. Reach out to a moderator to help you out with this issue.`);
@@ -138,6 +177,10 @@ export default class CampaignManager {
 
   private async attackCommand(message: Discord.Message, args: string[]): Promise<void> {
     const [matchedChar] = this.findCharInMessage(message);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     const currentMap = this._campaign.dungeon;
 
     if (args[1]) {
@@ -179,8 +222,12 @@ export default class CampaignManager {
   }
 
   private async examineCommand(message: Discord.Message, args: string[]): Promise<void> {
+    const [matchedChar] = this.findCharInMessage(message);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     if (args[1]) {
-      const [matchedChar] = this.findCharInMessage(message);
       const currentMap = this._campaign.dungeon;
       const surroundings = await this.getSurroundings(currentMap.world, matchedChar.position, 4, message.author.id);
       const nextArgs = args.splice(1).join(' ').toLowerCase();
@@ -237,6 +284,10 @@ export default class CampaignManager {
 
   private mapCommand(message: Discord.Message, args: string[]): void {
     const [matchedChar] = this.findCharInMessage(message);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     const currentMap = this._campaign.dungeon;
 
     if (args[1] && args[1] === 'loc') {
@@ -278,24 +329,29 @@ export default class CampaignManager {
   }
 
   private async walkCommand(message: Discord.Message, args: string[]): Promise<void> {
-    const [matchedChar] = this.findCharInMessage(message);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [matchedChar, charIndex, player] = this.findCharInMessage(message);
+    if (matchedChar.gameState === this.GameState.GivenUp) {
+      this.givenUpCommand(message);
+      return;
+    }
     const currentMap = this._campaign.dungeon;
 
     if (args[1]) {
       switch (args[1]) {
         default:
-          message.channel.send(`> ${matchedChar.name} remains in place.`);
+          message.channel.send(`> **${matchedChar.name}** remains in place.`);
           break;
         case 'n':
           if (
             matchedChar.position.y - 1 <= 0 ||
             currentMap.world[matchedChar.position.y - 1][matchedChar.position.x] === 2
           ) {
-            message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
+            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
             // eslint-disable-next-line no-param-reassign
             matchedChar.position.y -= 1;
-            message.channel.send(`> ${matchedChar.name} takes a step, northward.`);
+            message.channel.send(`> **${matchedChar.name}** takes a step, northward.`);
           }
           break;
         case 'e':
@@ -303,11 +359,11 @@ export default class CampaignManager {
             matchedChar.position.x + 1 >= currentMap.width ||
             currentMap.world[matchedChar.position.y][matchedChar.position.x + 1] === 2
           ) {
-            message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
+            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
             // eslint-disable-next-line no-param-reassign
             matchedChar.position.x += 1;
-            message.channel.send(`> ${matchedChar.name} takes a step, eastward.`);
+            message.channel.send(`> **${matchedChar.name}** takes a step, eastward.`);
           }
           break;
         case 'w':
@@ -315,11 +371,11 @@ export default class CampaignManager {
             matchedChar.position.x - 1 <= 0 ||
             currentMap.world[matchedChar.position.y][matchedChar.position.x - 1] === 2
           ) {
-            message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
+            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
             // eslint-disable-next-line no-param-reassign
             matchedChar.position.x -= 1;
-            message.channel.send(`> ${matchedChar.name} takes a step, westward.`);
+            message.channel.send(`> **${matchedChar.name}** takes a step, westward.`);
           }
           break;
         case 's':
@@ -327,13 +383,21 @@ export default class CampaignManager {
             matchedChar.position.y + 1 >= currentMap.height ||
             currentMap.world[matchedChar.position.y + 1][matchedChar.position.x] === 2
           ) {
-            message.channel.send(`> ${matchedChar.name} cannot pass that way.`);
+            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
             // eslint-disable-next-line no-param-reassign
             matchedChar.position.y += 1;
-            message.channel.send(`> ${matchedChar.name} takes a step, southward.`);
+            message.channel.send(`> **${matchedChar.name}** takes a step, southward.`);
           }
           break;
+      }
+      if (matchedChar.position.equals(new Vector2(currentMap.exit.x, currentMap.exit.y))) {
+        if (matchedChar.gameState !== this.GameState.Finished) {
+          message.channel.send(`> **${matchedChar.name}** reached the exit and _leaves the asylum!_`);
+          message.reply(`you are awarded **10 AP** for your escape!`);
+          matchedChar.gameState = this.GameState.Finished; // finished
+          player.ap += 10;
+        }
       }
       await this._dependencies.databaseService.manager.save(matchedChar);
       await this.monsterTurn(message.channel, currentMap);
@@ -526,9 +590,10 @@ export default class CampaignManager {
     return result;
   }
 
-  findCharInMessage(message: Discord.Message): [Character, number] {
+  findCharInMessage(message: Discord.Message): [Character, number, Player] {
     const matchedCharIndex = this._campaign.characters.findIndex((char) => char.uid === message.author.id);
     const matchedChar = this._campaign.characters[matchedCharIndex];
-    return [matchedChar, matchedCharIndex];
+    const matchedPlayer = this._campaign.characters[matchedCharIndex].player;
+    return [matchedChar, matchedCharIndex, matchedPlayer];
   }
 }

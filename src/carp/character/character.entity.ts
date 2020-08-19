@@ -1,9 +1,14 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, Column, ManyToOne } from 'typeorm';
 import Vector2 from '../../core/helpers/Vector2';
+// eslint-disable-next-line import/no-cycle
+import Player from './player.entity';
 
 @Entity()
 export default class Character {
-  @PrimaryColumn({ unique: true })
+  @PrimaryGeneratedColumn()
+  id: string;
+
+  @Column()
   uid: string;
 
   @Column()
@@ -32,4 +37,10 @@ export default class Character {
 
   @Column()
   graphic: string;
+
+  @Column()
+  gameState: number;
+
+  @ManyToOne(() => Player, (player) => player.characters)
+  player: Player;
 }

@@ -7,11 +7,11 @@ import random from 'roguelike/utility/random';
 import Vector2 from '../../core/helpers/Vector2';
 
 import Campaign from '../../carp/campaign/campaign.entity';
-import Character from '../../carp/character/character.entity';
 import Monster from '../../carp/character/monster.entity';
 
 import Command from './Command';
 import Map from '../../carp/helpers/Map';
+import Player from '../../carp/character/player.entity';
 
 export default class CampaignCommand extends Command {
   public commandData: {
@@ -150,10 +150,28 @@ export default class CampaignCommand extends Command {
               return message.reply(`that channel doesn't exist.`);
             }
 
-            const matchedChar = await this.dependencies.databaseService.manager.findOne(Character, message.author.id);
+            if (!args[2]) {
+              return message.reply(
+                `you need to let me know with what character you'll join! The full command is: \`${this.commandData.prefix}campaign join <channel> <name>\`, thank you!`,
+              );
+            }
+
+            const playerRepo = getRepository(Player);
+            const playerResult = await playerRepo.find({
+              where: { uid: message.author.id },
+              relations: ['characters'],
+            });
+
+            if (playerResult.length === 0) {
+              return message.reply(
+                `it looks like you don't have any characters yet! Create one using \`${this.commandData.prefix}character create <name>\` and try again!`,
+              );
+            }
+
+            const matchedChar = playerResult[0].characters.find((char) => char.name === args[2]);
             if (!matchedChar) {
               return message.reply(
-                `it looks like you don't have a character yet! Create one using \`${this.commandData.prefix}character create <name>\` and try again!`,
+                `it looks like you don't have a character with that name, yet! Create one using \`${this.commandData.prefix}character create <name>\` and try again!`,
               );
             }
 
