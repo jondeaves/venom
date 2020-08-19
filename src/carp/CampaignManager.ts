@@ -446,7 +446,7 @@ export default class CampaignManager {
   }
 
   isPlayerHere(char: Character, vec: Vector2): boolean {
-    if (char.position.equals(vec)) return true;
+    if (char.position.equals(vec) && char.gameState === this.GameState.Playing) return true;
     return false;
   }
 
@@ -456,11 +456,13 @@ export default class CampaignManager {
   }
 
   isAnyPlayerHere(vec: Vector2): boolean {
-    return this._campaign.characters.some((char) => char.current_health > 0 && this.isPlayerHere(char, vec));
+    return this._campaign.characters.some(
+      (char) => char.gameState === this.GameState.Playing && char.current_health > 0 && this.isPlayerHere(char, vec),
+    );
   }
 
   isPlayer(chars: Character[], name: string): Character | null {
-    return chars.find((char) => char.name === name);
+    return chars.find((char) => char.name === name && char.gameState === this.GameState.Playing);
   }
 
   isMonster(chars: Monster[], name: string): Monster | null {
@@ -566,7 +568,7 @@ export default class CampaignManager {
     let result = '';
     chars.forEach((char) => {
       if (char.current_health > 0) {
-        if (this.isInRange(char.position, vec, 1)) {
+        if (this.isInRange(char.position, vec, 1) && char.gameState === this.GameState.Playing) {
           result = char.uid;
         }
       }
@@ -577,7 +579,7 @@ export default class CampaignManager {
   isNearPlayer(char: Character, vec: Vector2): string {
     let result = '';
     if (char.current_health > 0) {
-      if (this.isInRange(char.position, vec, 1)) {
+      if (this.isInRange(char.position, vec, 1) && char.gameState === this.GameState.Playing) {
         result = char.uid;
       }
     }
