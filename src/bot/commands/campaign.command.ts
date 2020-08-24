@@ -4,6 +4,7 @@ import { getRepository } from 'typeorm';
 import roguelike from 'roguelike/level/roguelike';
 import random from 'roguelike/utility/random';
 
+import { hasRoleByID } from 'src/utils/Discord.utils';
 import Vector2 from '../../core/helpers/Vector2';
 
 import Campaign from '../../carp/campaign/campaign.entity';
@@ -21,9 +22,7 @@ export default class CampaignCommand extends Command {
   };
 
   async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
-    const moderatorPermission = message.member.roles.cache.has(
-      this.dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'),
-    );
+    const moderatorPermission = hasRoleByID(this.dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'), message);
     if (args[0]) {
       switch (args[0]) {
         default:

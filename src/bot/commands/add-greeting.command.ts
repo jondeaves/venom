@@ -1,12 +1,10 @@
 import Discord from 'discord.js';
+import { hasRoleByName } from 'src/utils/Discord.utils';
 import Command from './Command';
 
 export default class AddGreetingCommand extends Command {
   async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
-    // Only certain users can use this command
-    // TODO: Better handling of permissions for commands in a generic way
-    const permittedRoles = new Set(['staff', 'mod', 'bot-devs']);
-    const isPermitted = message.member.roles.cache.some((r) => permittedRoles.has(r.name));
+    const isPermitted = hasRoleByName(['staff', 'mod', 'bot-devs'], message);
 
     if (!isPermitted) {
       return message.author.send("Sorry but I can't let you add greetings!");

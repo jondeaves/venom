@@ -2,6 +2,7 @@ import Discord, { Message } from 'discord.js';
 import { getRepository } from 'typeorm';
 import random from 'roguelike/utility/random';
 
+import { hasRoleByID } from 'src/utils/Discord.utils';
 import Vector2 from '../core/helpers/Vector2';
 
 import Dependencies from '../core/types/Dependencies';
@@ -139,8 +140,7 @@ export default class CampaignManager {
   }
 
   private async stopCommand(message: Discord.Message): Promise<void> {
-    const modRoleID = this._dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID');
-    const hasModPermissions = message.member.roles.cache.has(modRoleID);
+    const hasModPermissions = hasRoleByID(this._dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'), message);
 
     if (hasModPermissions) {
       message.channel.send(
