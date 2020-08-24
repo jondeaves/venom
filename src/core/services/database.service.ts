@@ -17,7 +17,7 @@ export default class DatabaseService {
     try {
       this._connection = await createConnection({
         type: 'postgres',
-        url: this._configService.get('DATABASE_URL'),
+        url: this._configService.DATABASE_URL,
         entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
         synchronize: true,
       });

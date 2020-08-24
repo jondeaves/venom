@@ -22,7 +22,7 @@ export default class CampaignCommand extends Command {
   };
 
   async execute(message: Discord.Message, args: string[]): Promise<Discord.Message> {
-    const moderatorPermission = hasRoleByID(this.dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'), message);
+    const moderatorPermission = hasRoleByID(this.dependencies.configService.CAMPAIGN_MODERATOR_ROLE_ID, message);
     if (args[0]) {
       switch (args[0]) {
         default:

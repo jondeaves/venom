@@ -31,7 +31,7 @@ export default class CampaignManager {
   }
 
   public async execute(message: Message): Promise<void> {
-    const prefix = this._dependencies.configService.get('CAMPAIGN_TRIGGER');
+    const prefix = this._dependencies.configService.CAMPAIGN_TRIGGER;
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -140,7 +140,7 @@ export default class CampaignManager {
   }
 
   private async stopCommand(message: Discord.Message): Promise<void> {
-    const hasModPermissions = hasRoleByID(this._dependencies.configService.get('CAMPAIGN_MODERATOR_ROLE_ID'), message);
+    const hasModPermissions = hasRoleByID(this._dependencies.configService.CAMPAIGN_MODERATOR_ROLE_ID, message);
 
     if (hasModPermissions) {
       message.channel.send(

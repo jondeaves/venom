@@ -27,7 +27,7 @@ export default class Bot {
   }
 
   private setCommands(): void {
-    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
 
     // Load in our commands for the command handler
     // TODO: Refactor this into a CommandHandler class?
@@ -132,7 +132,7 @@ export default class Bot {
 
     // Perform connect, throw the error if we can't
     try {
-      await this._discordClient.login(this._dependencies.configService.get('DISCORD_BOT_TOKEN'));
+      await this._discordClient.login(this._dependencies.configService.DISCORD_BOT_TOKEN);
     } catch (error) {
       const errMsg = `Cannot initialise Discord client. Check the token: ${this._dependencies.configService.get(
         'DISCORD_BOT_TOKEN',
@@ -161,7 +161,7 @@ export default class Bot {
   private async handleRPG(message: Discord.Message): Promise<boolean> {
     // Check if this is for an rpg campaign first
     const campaignRepository = getRepository(Campaign);
-    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
     const result = await campaignRepository.find({
       where: { roomId: message.channel.id },
       relations: ['characters', 'monsters'],
@@ -187,7 +187,7 @@ export default class Bot {
   }
 
   private async handleBot(message: Discord.Message): Promise<void> {
-    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
 
     // If the message either doesn't start with the prefix or was sent by a bot, exit early.
     if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) {

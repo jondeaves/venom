@@ -1,8 +1,6 @@
 import Config from '../types/Config';
-import Environment from '../types/Environment';
-import LogLevel from '../types/LogLevel';
 
-export default class ConfigService {
+export default class ConfigService extends Config {
   /**
    * Object that holds all config values used by the system
    *
@@ -16,20 +14,35 @@ export default class ConfigService {
   }
 
   constructor() {
-    this.config = {
-      BOT_TRIGGER: process.env.BOT_TRIGGER || '!',
-      CAMPAIGN_TRIGGER: process.env.CAMPAIGN_TRIGGER || '>',
-      CAMPAIGN_MODERATOR_ROLE_ID: process.env.CAMPAIGN_MODERATOR_ROLE_ID || '',
-      DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
-      MONGODB_URI: process.env.MONGODB_URI || '',
-      MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || '',
-      DATABASE_URL: process.env.DATABASE_URL || '',
-      NODE_ENV: (process.env.NODE_ENV as Environment) || 'development',
-      LOG_LEVEL: (process.env.LOG_LEVEL as LogLevel) || 'info',
-    };
+    super();
+    this.config = {} as never;
+    this.takeEnv('BOT_TRIGGER', '!');
+    this.takeEnv('CAMPAIGN_TRIGGER', '>');
+    this.takeEnv('CAMPAIGN_MODERATOR_ROLE_ID', '');
+    this.takeEnv('DISCORD_BOT_TOKEN');
+    this.takeEnv('MONGODB_URI', '');
+    this.takeEnv('MONGODB_DB_NAME', '');
+    this.takeEnv('DATABASE_URL', '');
+    this.takeEnv('NODE_ENV', 'development');
+    this.takeEnv('LOG_LEVEL', 'info');
   }
 
-  public get(key: keyof Config): string {
+  private takeEnv<K extends keyof Config>(key: K, defaultValue?: Config[K]): void {
+    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-this-alias, @typescript-eslint/naming-convention
+    const _this: ConfigService = this;
+    this.config[key] = (process.env[key] ?? defaultValue ?? '') as Config[K];
+
+    Object.assign(this, {
+      get [key]() {
+        return _this.config[key];
+      },
+      set [key](value: Config[K]) {
+        _this.config[key] = value;
+      },
+    });
+  }
+
+  public get<K extends keyof Config>(key: K): Config[K] {
     return this.config[key];
   }
 }

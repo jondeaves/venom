@@ -10,7 +10,7 @@ export default class LoggerService {
 
   constructor(private _configService: ConfigService) {
     this._logger = winston.createLogger({
-      level: this._configService.get('LOG_LEVEL'),
+      level: this._configService.LOG_LEVEL,
       format: winston.format.json(),
       transports: [
         new winston.transports.File({
