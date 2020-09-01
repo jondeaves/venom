@@ -1,38 +1,32 @@
 import Discord, { Message } from 'discord.js';
 import { getRepository } from 'typeorm';
 import random from 'roguelike/utility/random';
-
 import { hasRoleByID } from 'src/utils/Discord.utils';
+import { parseMovementArg, MovementDirection, AllMovementDirections, GameState } from 'src/utils/Game.utils';
+import { arraySum } from 'src/utils/Array.utils';
 import Vector2 from '../core/helpers/Vector2';
-
 import Dependencies from '../core/types/Dependencies';
-
 import Campaign from './campaign/campaign.entity';
 import Character from './character/character.entity';
 import Monster from './character/monster.entity';
-
 import Map from './helpers/Map';
 import Player from './character/player.entity';
 import { World, MapMarkers } from './types/MapObject';
 
+const MAX_BATCH_MOVES = 5;
+
 export default class CampaignManager {
-  private _dependencies: Dependencies;
+  private dependencies: Dependencies;
 
-  private _campaign: Campaign;
-
-  GameState = {
-    Playing: 1,
-    Finished: 2,
-    GivenUp: 3,
-  };
+  private campaign: Campaign;
 
   constructor(dependencies: Dependencies, campaign: Campaign) {
-    this._dependencies = dependencies;
-    this._campaign = campaign;
+    this.dependencies = dependencies;
+    this.campaign = campaign;
   }
 
   public async execute(message: Message): Promise<void> {
-    const prefix = this._dependencies.configService.CAMPAIGN_TRIGGER;
+    const prefix = this.dependencies.configService.CAMPAIGN_TRIGGER;
 
     if (!message.content.toLowerCase().startsWith(prefix)) {
       return;
@@ -95,53 +89,53 @@ export default class CampaignManager {
   }
 
   private infoCommand(message: Discord.Message): void {
-    message.channel.send(`Welcome to campaign ${this._campaign.id}`);
-    message.channel.send(`There are ${this._campaign.characters.length} weary travellers.`);
+    message.channel.send(`Welcome to campaign ${this.campaign.id}`);
+    message.channel.send(`There are ${this.campaign.characters.length} weary travellers.`);
   }
 
   private lookCommand(message: Discord.Message): void {
-    const [matchedChar] = this.findCharInMessage(message);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    const [player] = this.findCharInMessage(message);
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
-    const currentMap = this._campaign.dungeon;
+    const currentMap = this.campaign.dungeon;
 
-    message.channel.send(`> **${matchedChar.name}** looks around.`);
+    message.channel.send(`> **${player.name}** looks around.`);
     const list = this.getSurroundings(
       currentMap.world,
-      new Vector2(matchedChar.position.x, matchedChar.position.y),
+      new Vector2(player.position.x, player.position.y),
       3,
       message.author.id,
     );
-    message.channel.send(`> **${matchedChar.name}** sees \`${this.formatListToString(list)}\`.`);
+    message.channel.send(`> **${player.name}** sees \`${this.formatListToString(list)}\`.`);
   }
 
   private statusCommand(message: Discord.Message): void {
-    const [matchedChar] = this.findCharInMessage(message);
+    const [player] = this.findCharInMessage(message);
 
     const msg = [];
-    msg.push(`> **${matchedChar.name}** stops for a moment to look at themselves.`);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    msg.push(`> **${player.name}** stops for a moment to look at themselves.`);
+    if (player.gameState === GameState.GivenUp) {
       msg.push(`> Your thoughts are not your own, you are fated to roam the halls of the asylum forever.`);
       msg.push(`> You have **given up**.`);
     } else {
       msg.push(
-        `> HP: ${':heart:'.repeat(matchedChar.current_health)}${':broken_heart:'.repeat(
-          matchedChar.max_health - matchedChar.current_health,
+        `> HP: ${':heart:'.repeat(player.current_health)}${':broken_heart:'.repeat(
+          player.max_health - player.current_health,
         )}`,
       );
-      msg.push(`> :crossed_swords: ${matchedChar.power} :shield: ${matchedChar.defense}`);
+      msg.push(`> :crossed_swords: ${player.power} :shield: ${player.defense}`);
     }
     message.channel.send(msg.join(`\n`));
   }
 
   private async stopCommand(message: Discord.Message): Promise<void> {
-    const hasModPermissions = hasRoleByID(this._dependencies.configService.CAMPAIGN_MODERATOR_ROLE_ID, message);
+    const hasModPermissions = hasRoleByID(this.dependencies.configService.CAMPAIGN_MODERATOR_ROLE_ID, message);
 
     if (hasModPermissions) {
       message.channel.send(
@@ -151,17 +145,17 @@ export default class CampaignManager {
       message.channel.send(`All players are awarded **5 AP** for the effort to escape this asylum.`);
 
       const playerRepo = getRepository(Player);
-      this._campaign.characters.forEach(async (char: Character) => {
+      this.campaign.characters.forEach(async (char: Character) => {
         const result = await playerRepo.find({
           where: { uid: char.uid },
           relations: ['characters'],
         });
         if (result.length > 0) {
           result[0].ap += 5;
-          await this._dependencies.databaseService.manager.save(Player, result[0]);
+          await this.dependencies.databaseService.manager.save(Player, result[0]);
         }
       });
-      await this._dependencies.databaseService.manager.delete(Campaign, this._campaign.id);
+      await this.dependencies.databaseService.manager.delete(Campaign, this.campaign.id);
     } else {
       message.reply(
         `unfortunately you do not have permission to run that command. Contact a moderator to discuss your intentions.`,
@@ -170,108 +164,112 @@ export default class CampaignManager {
   }
 
   private async leaveCommmand(message: Discord.Message): Promise<void> {
-    const [matchedChar, matchedCharIndex] = this.findCharInMessage(message);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    const [player, playerIdx] = this.findCharInMessage(message);
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
-    if (matchedCharIndex >= 0) {
-      matchedChar.gameState = this.GameState.GivenUp;
-      message.reply(`your character **${matchedChar.name}** has given up...`);
-      await this._dependencies.databaseService.manager.save(matchedChar);
+    if (playerIdx >= 0) {
+      player.gameState = GameState.GivenUp;
+      message.reply(`your character **${player.name}** has given up...`);
+      await this.dependencies.databaseService.manager.save(player);
       return;
     }
     message.reply(`I couldn't find your character. Reach out to a moderator to help you out with this issue.`);
   }
 
   private async attackCommand(message: Discord.Message, args: string[]): Promise<void> {
-    const [matchedChar] = this.findCharInMessage(message);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    const [player] = this.findCharInMessage(message);
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
-    const currentMap = this._campaign.dungeon;
+    const currentMap = this.campaign.dungeon;
 
     if (args[1]) {
       const nextArgs = args.splice(1).join(' ');
-      const allChar = this._campaign.characters;
-      const allMon = this._campaign.monsters;
+      const allChar = this.campaign.characters;
+      const allMon = this.campaign.monsters;
       const char = this.isPlayer(allChar, nextArgs);
       const mon = this.isMonster(allMon, nextArgs);
       let damage = 0;
 
       if (char) {
-        damage = Math.max(0, matchedChar.power - char.defense);
+        damage = Math.max(0, player.power - char.defense);
         char.current_health -= damage;
-        message.channel.send(`> **${matchedChar.name}** attacks **${nextArgs}** for ${damage} damage!`);
+        message.channel.send(`> **${player.name}** attacks **${nextArgs}** for ${damage} damage!`);
         if (char.current_health <= 0) {
           message.channel.send(`> **${char.name}** lets out a deathly scream and drops dead on the floor.`);
         }
-        this._dependencies.databaseService.manager.save(char);
+        this.dependencies.databaseService.manager.save(char);
         return;
       }
       if (mon) {
-        if (this.isInRange(matchedChar.position, mon.position, 2) && allMon.find((obj) => obj.name === nextArgs)) {
-          damage = Math.max(0, matchedChar.power - mon.defense);
-          message.channel.send(`> **${matchedChar.name}** attacks **${mon.name}** for ${damage} damage!`);
+        if (this.isInRange(player.position, mon.position, 2) && allMon.find((obj) => obj.name === nextArgs)) {
+          damage = Math.max(0, player.power - mon.defense);
+          message.channel.send(`> **${player.name}** attacks **${mon.name}** for ${damage} damage!`);
           mon.current_health -= damage;
           if (mon.current_health <= 0) {
-            message.channel.send(`> **${mon.name}** is defeated!\n> **${matchedChar.name}** gets ${mon.expvalue} EXP!`);
-            const matchedMonIndex = this._campaign.monsters.findIndex((m) => m.id === mon.id);
-            this._campaign.monsters.splice(matchedMonIndex, 1);
-            await this._dependencies.databaseService.manager.save(this._campaign);
+            message.channel.send(`> **${mon.name}** is defeated!\n> **${player.name}** gets ${mon.expvalue} EXP!`);
+            const matchedMonIndex = this.campaign.monsters.findIndex((m) => m.id === mon.id);
+            this.campaign.monsters.splice(matchedMonIndex, 1);
+            await this.dependencies.databaseService.manager.save(this.campaign);
             // TODO: add exp, level up, etc
             return;
           }
         }
       }
-      message.channel.send(`> **${matchedChar.name}** swings widely into the air, hitting nothing.`);
+      message.channel.send(`> **${player.name}** swings widely into the air, hitting nothing.`);
       this.monsterTurn(message.channel, currentMap, 2);
     }
   }
 
   private async examineCommand(message: Discord.Message, args: string[]): Promise<void> {
-    const [matchedChar] = this.findCharInMessage(message);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    const [player] = this.findCharInMessage(message);
+
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
+
     if (args[1]) {
-      const currentMap = this._campaign.dungeon;
-      const surroundings = await this.getSurroundings(currentMap.world, matchedChar.position, 4, message.author.id);
+      const currentMap = this.campaign.dungeon;
+      const surroundings = await this.getSurroundings(currentMap.world, player.position, 4, message.author.id);
       const nextArgs = args.splice(1).join(' ').toLowerCase();
 
       if (surroundings.find((obj) => obj.toLowerCase() === nextArgs)) {
-        const allChar = this._campaign.characters;
-        const allMons = this._campaign.monsters;
+        const allChar = this.campaign.characters;
+        const allMons = this.campaign.monsters;
         const char = this.isPlayer(allChar, nextArgs);
         const mon = this.isMonster(allMons, nextArgs);
+
         if (char) {
-          const examine = await this._dependencies.databaseService.manager.findOne(Character, char);
-          message.channel.send(`> **${matchedChar.name}** examines **${examine.name}**.`);
+          const examine = await this.dependencies.databaseService.manager.findOne(Character, char);
+          message.channel.send(`> **${player.name}** examines **${examine.name}**.`);
           const extraInfo = [];
-          if (examine.power > matchedChar.defense) {
+          if (examine.power > player.defense) {
             extraInfo.push('They look pretty powerful.');
-          } else if (examine.power === matchedChar.power) {
+          } else if (examine.power === player.power) {
             extraInfo.push('We look equally strong.');
           } else {
             extraInfo.push("They don't look very strong.");
           }
-          if (examine.defense > matchedChar.power) {
+          if (examine.defense > player.power) {
             extraInfo.push('They look pretty defensive.');
-          } else if (examine.defense === matchedChar.defense) {
+          } else if (examine.defense === player.defense) {
             extraInfo.push('We look equally guarded.');
           } else {
             extraInfo.push("They don't look very shielded.");
@@ -298,25 +296,25 @@ export default class CampaignManager {
           }
         }
       } else {
-        message.channel.send(`> **${matchedChar.name}** stares blankly in front of them.`);
+        message.channel.send(`> **${player.name}** stares blankly in front of them.`);
       }
     }
   }
 
   private mapCommand(message: Discord.Message, args: string[]): void {
-    const [matchedChar] = this.findCharInMessage(message);
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    const [player] = this.findCharInMessage(message);
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
-    const currentMap = this._campaign.dungeon;
+    const currentMap = this.campaign.dungeon;
 
     if (args[1] && args[1] === 'loc') {
-      message.channel.send(matchedChar.position);
+      message.channel.send(player.position);
       return;
     }
     const msg = [];
@@ -326,9 +324,9 @@ export default class CampaignManager {
       let line = '';
       for (let j = 0; j < currentMap.world[i].length; j += 1) {
         const vec = new Vector2(j, i);
-        const playerHere = this._campaign.characters.find((char) => this.isPlayerHere(char, vec));
-        const monsterHere = this._campaign.monsters.find((mon) => this.isMonsterHere(mon, vec));
-        if (this.isInRange(matchedChar.position, vec, sight) || sight === -1) {
+        const playerHere = this.campaign.characters.find((char) => this.isPlayerHere(char, vec));
+        const monsterHere = this.campaign.monsters.find((mon) => this.isMonsterHere(mon, vec));
+        if (this.isInRange(player.position, vec, sight) || sight === -1) {
           if (playerHere) {
             line += playerHere.graphic;
           } else if (monsterHere) {
@@ -344,104 +342,107 @@ export default class CampaignManager {
   }
 
   private async walkCommand(message: Discord.Message, args: string[]): Promise<void> {
-    const [matchedChar] = this.findCharInMessage(message);
+    const [player] = this.findCharInMessage(message);
 
-    if (matchedChar.gameState === this.GameState.GivenUp) {
+    if (player.gameState === GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
     }
-    if (matchedChar.gameState === this.GameState.Finished) {
+    if (player.gameState === GameState.Finished) {
       this.winnerCommand(message);
       return;
     }
 
-    const currentMap = this._campaign.dungeon;
+    const currentMap = this.campaign.dungeon;
 
     if (args[1]) {
-      const movementArgs = args[1].split(/(?![0-9])+/);
+      const moves = parseMovementArg(args[1]);
+      const totalMoves = arraySum(moves, (cur) => cur[1]);
 
-      for (const move of movementArgs) {
-        const [direction, amountStr] = move.split(/(?![a-z]+)/i);
-        const amount = Number(amountStr ?? '1');
+      if (totalMoves > MAX_BATCH_MOVES) {
+        message.channel.send(`> Too many moves in one go! Pace yourself, don't get yourself too tired.`);
+        return;
+      }
 
-        if (['n', 'e', 's', 'w'].includes(direction) && !Number.isNaN(amount)) {
+      for (const [direction, amount] of moves) {
+        if (AllMovementDirections.includes(direction) && !Number.isNaN(amount)) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           for await (const _i of new Array(amount)) {
             switch (direction) {
               default:
-                message.channel.send(`> **${matchedChar.name}** remains in place.`);
+                message.channel.send(`> **${player.name}** remains in place.`);
                 break;
-              case 'n':
+              case MovementDirection.North:
                 if (
-                  matchedChar.position.y - 1 <= 0 ||
-                  currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y - 1 })
+                  player.position.y - 1 <= 0 ||
+                  currentMap.isWall({ x: player.position.x, y: player.position.y - 1 })
                 ) {
-                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                  message.channel.send(`> **${player.name}** cannot pass that way.`);
                 } else {
                   // eslint-disable-next-line no-param-reassign
-                  matchedChar.position.y -= 1;
-                  message.channel.send(`> **${matchedChar.name}** takes a step, northward.`);
+                  player.position.y -= 1;
+                  message.channel.send(`> **${player.name}** takes a step, northward.`);
                 }
                 break;
-              case 'e':
+              case MovementDirection.East:
                 if (
-                  matchedChar.position.x + 1 >= currentMap.width ||
-                  currentMap.isWall({ x: matchedChar.position.x + 1, y: matchedChar.position.y })
+                  player.position.x + 1 >= currentMap.width ||
+                  currentMap.isWall({ x: player.position.x + 1, y: player.position.y })
                 ) {
-                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                  message.channel.send(`> **${player.name}** cannot pass that way.`);
                 } else {
                   // eslint-disable-next-line no-param-reassign
-                  matchedChar.position.x += 1;
-                  message.channel.send(`> **${matchedChar.name}** takes a step, eastward.`);
+                  player.position.x += 1;
+                  message.channel.send(`> **${player.name}** takes a step, eastward.`);
                 }
                 break;
-              case 'w':
+              case MovementDirection.West:
                 if (
-                  matchedChar.position.x - 1 <= 0 ||
-                  currentMap.isWall({ x: matchedChar.position.x - 1, y: matchedChar.position.y })
+                  player.position.x - 1 <= 0 ||
+                  currentMap.isWall({ x: player.position.x - 1, y: player.position.y })
                 ) {
-                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                  message.channel.send(`> **${player.name}** cannot pass that way.`);
                 } else {
                   // eslint-disable-next-line no-param-reassign
-                  matchedChar.position.x -= 1;
-                  message.channel.send(`> **${matchedChar.name}** takes a step, westward.`);
+                  player.position.x -= 1;
+                  message.channel.send(`> **${player.name}** takes a step, westward.`);
                 }
                 break;
-              case 's':
+              case MovementDirection.South:
                 if (
-                  matchedChar.position.y + 1 >= currentMap.height ||
-                  currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y + 1 })
+                  player.position.y + 1 >= currentMap.height ||
+                  currentMap.isWall({ x: player.position.x, y: player.position.y + 1 })
                 ) {
-                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                  message.channel.send(`> **${player.name}** cannot pass that way.`);
                 } else {
                   // eslint-disable-next-line no-param-reassign
-                  matchedChar.position.y += 1;
-                  message.channel.send(`> **${matchedChar.name}** takes a step, southward.`);
+                  player.position.y += 1;
+                  message.channel.send(`> **${player.name}** takes a step, southward.`);
                 }
                 break;
             }
 
-            if (matchedChar.position.equals(new Vector2(currentMap.exit.x, currentMap.exit.y))) {
-              if (matchedChar.gameState !== this.GameState.Finished) {
-                message.channel.send(`> **${matchedChar.name}** reached the exit and _leaves the asylum!_`);
+            if (player.position.equals(new Vector2(currentMap.exit.x, currentMap.exit.y))) {
+              if (player.gameState !== GameState.Finished) {
+                message.channel.send(`> **${player.name}** reached the exit and _leaves the asylum!_`);
                 message.reply(`you are awarded **10 AP** for your escape!`);
-                matchedChar.gameState = this.GameState.Finished; // finished
+                player.gameState = GameState.Finished; // finished
                 const playerRepo = getRepository(Player);
                 const result = await playerRepo.find({
-                  where: { uid: matchedChar.uid },
+                  where: { uid: player.uid },
                   relations: ['characters'],
                 });
                 if (result.length > 0) {
                   result[0].ap += 10;
-                  await this._dependencies.databaseService.manager.save(Player, result[0]);
+                  await this.dependencies.databaseService.manager.save(Player, result[0]);
                 }
               }
             }
-            await this._dependencies.databaseService.manager.save(matchedChar);
+            await this.dependencies.databaseService.manager.save(player);
             await this.monsterTurn(message.channel, currentMap);
           }
         } else {
-          message.channel.send(`> **${matchedChar.name}** cannot make that move.`);
+          message.channel.send(`> **${player.name}** cannot make that move.`);
         }
       }
     }
@@ -453,7 +454,7 @@ export default class CampaignManager {
   }
 
   isPlayerHere(char: Character, vec: Vector2): boolean {
-    if (char.position.equals(vec) && char.gameState === this.GameState.Playing) return true;
+    if (char.position.equals(vec) && char.gameState === GameState.Playing) return true;
     return false;
   }
 
@@ -463,13 +464,13 @@ export default class CampaignManager {
   }
 
   isAnyPlayerHere(vec: Vector2): boolean {
-    return this._campaign.characters.some(
-      (char) => char.gameState === this.GameState.Playing && char.current_health > 0 && this.isPlayerHere(char, vec),
+    return this.campaign.characters.some(
+      (char) => char.gameState === GameState.Playing && char.current_health > 0 && this.isPlayerHere(char, vec),
     );
   }
 
   isPlayer(chars: Character[], name: string): Character | null {
-    return chars.find((char) => char.name === name && char.gameState === this.GameState.Playing);
+    return chars.find((char) => char.name === name && char.gameState === GameState.Playing);
   }
 
   isMonster(chars: Monster[], name: string): Monster | null {
@@ -481,16 +482,16 @@ export default class CampaignManager {
     map: Map,
     favoredAction = 0,
   ): Promise<void> {
-    this._campaign.monsters.forEach((monster) => {
+    this.campaign.monsters.forEach((monster) => {
       // TODO: monsters or other AI will take a turn here.
       // the AI should be capable of:
       // 1) damaging a player that is one tile next to them (non diagonal)
       // 2) moving one tile around if no player is near
       // if the AI has 0 zero health, it will be removed from the game
       const action = favoredAction && random.dice('d20') > 12 ? favoredAction : random.dice('d2');
-      const charuid = this.isNearPlayers(this._campaign.characters, monster.position); // nearest player
+      const charuid = this.isNearPlayers(this.campaign.characters, monster.position); // nearest player
 
-      const matchedChar = this._campaign.characters.find((char) => char.uid === charuid);
+      const matchedChar = this.campaign.characters.find((char) => char.uid === charuid);
       switch (action) {
         default:
           // nothing
@@ -550,7 +551,7 @@ export default class CampaignManager {
           break;
       }
     });
-    await this._dependencies.databaseService.manager.save(this._campaign);
+    await this.dependencies.databaseService.manager.save(this.campaign);
   }
 
   updateMonsterPos(map: Map, newPos: Vector2, monster: Monster): void {
@@ -566,7 +567,7 @@ export default class CampaignManager {
       if (!anyPlayerhere) {
         const updMonster = monster;
         updMonster.position = new Vector2(newPos.x, newPos.y);
-        this._dependencies.databaseService.manager.save(updMonster);
+        this.dependencies.databaseService.manager.save(updMonster);
       }
     }
   }
@@ -575,7 +576,7 @@ export default class CampaignManager {
     let result = '';
     chars.forEach((char) => {
       if (char.current_health > 0) {
-        if (this.isInRange(char.position, vec, 1) && char.gameState === this.GameState.Playing) {
+        if (this.isInRange(char.position, vec, 1) && char.gameState === GameState.Playing) {
           result = char.uid;
         }
       }
@@ -586,7 +587,7 @@ export default class CampaignManager {
   isNearPlayer(char: Character, vec: Vector2): string {
     let result = '';
     if (char.current_health > 0) {
-      if (this.isInRange(char.position, vec, 1) && char.gameState === this.GameState.Playing) {
+      if (this.isInRange(char.position, vec, 1) && char.gameState === GameState.Playing) {
         result = char.uid;
       }
     }
@@ -603,8 +604,8 @@ export default class CampaignManager {
 
   getSurroundings(world: World, vec: Vector2, range: number, uid: string): string[] {
     const result = [];
-    const allChar = this._campaign.characters;
-    const allMon = this._campaign.monsters;
+    const allChar = this.campaign.characters;
+    const allMon = this.campaign.monsters;
 
     const playersInRange = allChar.filter(
       (char) =>
@@ -636,9 +637,9 @@ export default class CampaignManager {
   }
 
   findCharInMessage(message: Discord.Message): [Character, number, Player] {
-    const matchedCharIndex = this._campaign.characters.findIndex((char) => char.uid === message.author.id);
-    const matchedChar = this._campaign.characters[matchedCharIndex];
-    const matchedPlayer = this._campaign.characters[matchedCharIndex].player;
+    const matchedCharIndex = this.campaign.characters.findIndex((char) => char.uid === message.author.id);
+    const matchedChar = this.campaign.characters[matchedCharIndex];
+    const matchedPlayer = this.campaign.characters[matchedCharIndex].player;
     return [matchedChar, matchedCharIndex, matchedPlayer];
   }
 }

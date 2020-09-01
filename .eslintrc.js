@@ -54,6 +54,7 @@ module.exports = {
     'no-underscore-dangle': 'off',
     'no-plusplus': 'off',
     'no-await-in-loop': 'off',
+    'unicorn/no-reduce': 'off',
   },
   overrides: [
     {
