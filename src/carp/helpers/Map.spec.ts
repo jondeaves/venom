@@ -55,14 +55,14 @@ describe('Map', () => {
       const result = map.toJSON();
 
       expect(result).to.equal(
-        '{"width":1,"height":1,"enter":{"x":0,"y":0,"room_id":0},"exit":{"x":0,"y":0,"room_id":0},"room_count":0,"rooms":{"0":{"neighbors":[],"doors":[],"top":0,"left":0,"width":0,"height":0,"deadend":true}},"world":[[]]}',
+        '{"width":1,"height":1,"enter":{"x":0,"y":0,"room_id":0},"exit":{"x":0,"y":0,"room_id":0},"room_count":0,"rooms":{"0":{"id":0,"neighbors":[],"doors":[],"top":0,"left":0,"width":0,"height":0,"deadend":true}},"world":[[]]}',
       );
     });
   });
 
   describe('fromJSON', () => {
     it('should turn string into Map', async () => {
-      const str = `{"width":1,"height":1,"enter":{"x":0,"y":0,"room_id":0},"exit":{"x":0,"y":0,"room_id":0},"room_count":0,"rooms":{"0":{"neighbors":[],"doors":[],"top":0,"left":0,"width":0,"height":0,"deadend":true}},"world":[[]]}`;
+      const str = `{"width":1,"height":1,"enter":{"x":0,"y":0,"room_id":0},"exit":{"x":0,"y":0,"room_id":0},"room_count":0,"rooms":{"0":{"sid":0,"neighbors":[],"doors":[],"top":0,"left":0,"width":0,"height":0,"deadend":true}},"world":[[]]}`;
       const result = Map.fromJSON(str);
 
       expect(result).to.deep.equal({
