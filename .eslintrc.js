@@ -49,6 +49,11 @@ module.exports = {
     'no-underscore-dangle': ['error', { allowAfterThis: true }],
     'class-methods-use-this': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'no-restricted-syntax': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
+    'no-underscore-dangle': 'off',
+    'no-plusplus': 'off',
+    'no-await-in-loop': 'off',
   },
   overrides: [
     {

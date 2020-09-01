@@ -20,5 +20,8 @@ export function hasRoleByID(
 }
 
 export function isMessage(object: unknown): object is Discord.Message {
-  return object.hasOwnProperty('member');
+  return (
+    object.hasOwnProperty('mentions') ||
+    (object.hasOwnProperty('content') && typeof (object as any).content === 'string')
+  );
 }

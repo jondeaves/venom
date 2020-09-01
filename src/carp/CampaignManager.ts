@@ -358,77 +358,92 @@ export default class CampaignManager {
     const currentMap = this._campaign.dungeon;
 
     if (args[1]) {
-      switch (args[1]) {
-        default:
-          message.channel.send(`> **${matchedChar.name}** remains in place.`);
-          break;
-        case 'n':
-          if (
-            matchedChar.position.y - 1 <= 0 ||
-            currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y - 1 })
-          ) {
-            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            matchedChar.position.y -= 1;
-            message.channel.send(`> **${matchedChar.name}** takes a step, northward.`);
+      const movementArgs = args[1].split(/(?![0-9])+/);
+
+      for (const move of movementArgs) {
+        const [direction, amountStr] = move.split(/(?![a-z]+)/i);
+        const amount = Number(amountStr ?? '1');
+
+        if (['n', 'e', 's', 'w'].includes(direction) && !Number.isNaN(amount)) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          for await (const _i of new Array(amount)) {
+            switch (direction) {
+              default:
+                message.channel.send(`> **${matchedChar.name}** remains in place.`);
+                break;
+              case 'n':
+                if (
+                  matchedChar.position.y - 1 <= 0 ||
+                  currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y - 1 })
+                ) {
+                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                } else {
+                  // eslint-disable-next-line no-param-reassign
+                  matchedChar.position.y -= 1;
+                  message.channel.send(`> **${matchedChar.name}** takes a step, northward.`);
+                }
+                break;
+              case 'e':
+                if (
+                  matchedChar.position.x + 1 >= currentMap.width ||
+                  currentMap.isWall({ x: matchedChar.position.x + 1, y: matchedChar.position.y })
+                ) {
+                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                } else {
+                  // eslint-disable-next-line no-param-reassign
+                  matchedChar.position.x += 1;
+                  message.channel.send(`> **${matchedChar.name}** takes a step, eastward.`);
+                }
+                break;
+              case 'w':
+                if (
+                  matchedChar.position.x - 1 <= 0 ||
+                  currentMap.isWall({ x: matchedChar.position.x - 1, y: matchedChar.position.y })
+                ) {
+                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                } else {
+                  // eslint-disable-next-line no-param-reassign
+                  matchedChar.position.x -= 1;
+                  message.channel.send(`> **${matchedChar.name}** takes a step, westward.`);
+                }
+                break;
+              case 's':
+                if (
+                  matchedChar.position.y + 1 >= currentMap.height ||
+                  currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y + 1 })
+                ) {
+                  message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
+                } else {
+                  // eslint-disable-next-line no-param-reassign
+                  matchedChar.position.y += 1;
+                  message.channel.send(`> **${matchedChar.name}** takes a step, southward.`);
+                }
+                break;
+            }
+
+            if (matchedChar.position.equals(new Vector2(currentMap.exit.x, currentMap.exit.y))) {
+              if (matchedChar.gameState !== this.GameState.Finished) {
+                message.channel.send(`> **${matchedChar.name}** reached the exit and _leaves the asylum!_`);
+                message.reply(`you are awarded **10 AP** for your escape!`);
+                matchedChar.gameState = this.GameState.Finished; // finished
+                const playerRepo = getRepository(Player);
+                const result = await playerRepo.find({
+                  where: { uid: matchedChar.uid },
+                  relations: ['characters'],
+                });
+                if (result.length > 0) {
+                  result[0].ap += 10;
+                  await this._dependencies.databaseService.manager.save(Player, result[0]);
+                }
+              }
+            }
+            await this._dependencies.databaseService.manager.save(matchedChar);
+            await this.monsterTurn(message.channel, currentMap);
           }
-          break;
-        case 'e':
-          if (
-            matchedChar.position.x + 1 >= currentMap.width ||
-            currentMap.isWall({ x: matchedChar.position.x + 1, y: matchedChar.position.y })
-          ) {
-            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            matchedChar.position.x += 1;
-            message.channel.send(`> **${matchedChar.name}** takes a step, eastward.`);
-          }
-          break;
-        case 'w':
-          if (
-            matchedChar.position.x - 1 <= 0 ||
-            currentMap.isWall({ x: matchedChar.position.x - 1, y: matchedChar.position.y })
-          ) {
-            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            matchedChar.position.x -= 1;
-            message.channel.send(`> **${matchedChar.name}** takes a step, westward.`);
-          }
-          break;
-        case 's':
-          if (
-            matchedChar.position.y + 1 >= currentMap.height ||
-            currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y + 1 })
-          ) {
-            message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            matchedChar.position.y += 1;
-            message.channel.send(`> **${matchedChar.name}** takes a step, southward.`);
-          }
-          break;
-      }
-      if (matchedChar.position.equals(new Vector2(currentMap.exit.x, currentMap.exit.y))) {
-        if (matchedChar.gameState !== this.GameState.Finished) {
-          message.channel.send(`> **${matchedChar.name}** reached the exit and _leaves the asylum!_`);
-          message.reply(`you are awarded **10 AP** for your escape!`);
-          matchedChar.gameState = this.GameState.Finished; // finished
-          const playerRepo = getRepository(Player);
-          const result = await playerRepo.find({
-            where: { uid: matchedChar.uid },
-            relations: ['characters'],
-          });
-          if (result.length > 0) {
-            result[0].ap += 10;
-            await this._dependencies.databaseService.manager.save(Player, result[0]);
-          }
+        } else {
+          message.channel.send(`> **${matchedChar.name}** cannot make that move.`);
         }
       }
-      await this._dependencies.databaseService.manager.save(matchedChar);
-      await this.monsterTurn(message.channel, currentMap);
     }
   }
 

@@ -210,6 +210,8 @@ export default class Bot {
         await command.execute(message, args);
       } catch (error) {
         this._dependencies.loggerService.log('error', error.message);
+        // eslint-disable-next-line no-console
+        console.error(error);
         message.reply('there was an error trying to follow that command!');
       }
     }
