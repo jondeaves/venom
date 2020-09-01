@@ -12,7 +12,7 @@ describe('Map', () => {
         { x: 0, y: 0, room_id: 0 },
         { x: 0, y: 0, room_id: 0 },
         0,
-        { '0': { neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
+        { '0': { id: 0, neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
         [[]],
       );
 
@@ -29,7 +29,7 @@ describe('Map', () => {
         { x: 22, y: 1, room_id: 0 },
         { x: 4, y: 2, room_id: 1 },
         0,
-        { '0': { neighbors: [], doors: [], top: 12, left: 6, width: 33, height: 2, deadend: true } },
+        { '0': { id: 0, neighbors: [], doors: [], top: 12, left: 6, width: 33, height: 2, deadend: true } },
         [[]],
       );
 
@@ -49,7 +49,7 @@ describe('Map', () => {
         { x: 0, y: 0, room_id: 0 },
         { x: 0, y: 0, room_id: 0 },
         0,
-        { '0': { neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
+        { '0': { id: 0, neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
         [[]],
       );
       const result = map.toJSON();
@@ -71,7 +71,7 @@ describe('Map', () => {
         enter: { x: 0, y: 0, room_id: 0 },
         exit: { x: 0, y: 0, room_id: 0 },
         room_count: 0,
-        rooms: { '0': { neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
+        rooms: { '0': { sid: 0, neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
         world: [[]],
       });
     });
@@ -85,7 +85,7 @@ describe('Map', () => {
         { x: 0, y: 0, room_id: 0 },
         { x: 0, y: 0, room_id: 0 },
         0,
-        { '0': { neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
+        { '0': { id: 0, neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
         [[]],
       );
       expect(map.isNull()).to.equal(true);
@@ -98,7 +98,7 @@ describe('Map', () => {
         { x: 0, y: 0, room_id: 0 },
         { x: 0, y: 0, room_id: 0 },
         0,
-        { '0': { neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
+        { '0': { id: 0, neighbors: [], doors: [], top: 0, left: 0, width: 0, height: 0, deadend: true } },
         [[]],
       );
 

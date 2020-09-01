@@ -1,13 +1,13 @@
-import Vector2Position from '../types/Vector2Position';
+import Coordinates2D from '../types/Vector2Position';
 
-export default class Vector2 implements Vector2Position {
+export default class Vector2 implements Coordinates2D {
   public x: number;
 
   public y: number;
 
-  constructor(_x: number, _y: number) {
-    this.x = _x;
-    this.y = _y;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
   }
 
   public toJSON(): string {
@@ -17,7 +17,7 @@ export default class Vector2 implements Vector2Position {
 
   public static fromJSON(value: string): Vector2 {
     try {
-      const parsed: Vector2Position = JSON.parse(value);
+      const parsed: Coordinates2D = JSON.parse(value);
       return new Vector2(parsed.x, parsed.y);
     } catch {
       return Vector2.zero;
@@ -28,7 +28,7 @@ export default class Vector2 implements Vector2Position {
     return new Vector2(0, 0);
   }
 
-  public equals(vec: Vector2): boolean {
+  public equals(vec: Coordinates2D): boolean {
     return this.x === vec.x && this.y === vec.y;
   }
 }

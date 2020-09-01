@@ -1,4 +1,4 @@
-export default interface Vector2Position {
+export default interface Coordinates2D {
   x: number;
   y: number;
 }

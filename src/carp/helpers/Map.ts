@@ -1,4 +1,10 @@
-import MapObject from '../types/MapObject';
+import Coordinates2D from 'src/core/types/Vector2Position';
+import ConfigService from '../../core/services/config.service';
+import LoggerService from '../../core/services/logger.service';
+import MapObject, { Rooms, World, RoomCoordinates, WorldTile } from '../types/MapObject';
+
+const config = new ConfigService();
+const loggerService = new LoggerService(config);
 
 export default class Map implements MapObject {
   public width: number;
@@ -11,29 +17,28 @@ export default class Map implements MapObject {
 
   public room_count: number;
 
-  public rooms: {
-    [id: string]: {
-      doors: [];
-      neighbors: [];
-      id: number;
-      top: number;
-      left: number;
-      width: number;
-      height: number;
-      deadend: boolean;
-    };
-  };
+  private static logger = loggerService;
 
-  public world: [[]];
+  public rooms: Rooms;
 
-  constructor(_width: number, _height: number, _enter: any, _exit: any, _room_count: number, _rooms: any, _world: any) {
-    this.width = _width;
-    this.height = _height;
-    this.enter = _enter;
-    this.exit = _exit;
-    this.room_count = _room_count;
-    this.rooms = _rooms;
-    this.world = _world;
+  public world: World;
+
+  constructor(
+    width: number,
+    height: number,
+    enter: RoomCoordinates,
+    exit: RoomCoordinates,
+    room_count: number,
+    rooms: Rooms,
+    world: World,
+  ) {
+    this.width = width;
+    this.height = height;
+    this.enter = enter;
+    this.exit = exit;
+    this.room_count = room_count;
+    this.rooms = rooms;
+    this.world = world;
   }
 
   public toJSON(): string {
@@ -54,12 +59,17 @@ export default class Map implements MapObject {
         parsed.rooms,
         parsed.world,
       );
-    } catch {
+    } catch (error) {
+      this.logger.log('error', 'Could not parse map from JSON object', error);
       return new Map(0, 0, undefined, undefined, 0, undefined, undefined); // just a default map
     }
   }
 
   public isNull(): boolean {
     return this.width === 0 || this.height === 0;
+  }
+
+  public isWall(tile: Coordinates2D): boolean {
+    return this.world[tile.y][tile.x] === WorldTile.Wall;
   }
 }

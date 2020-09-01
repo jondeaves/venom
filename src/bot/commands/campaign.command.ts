@@ -5,6 +5,7 @@ import roguelike from 'roguelike/level/roguelike';
 import random from 'roguelike/utility/random';
 
 import { hasRoleByID } from 'src/utils/Discord.utils';
+import Monster from 'src/carp/monsters/Monster';
 import Vector2 from '../../core/helpers/Vector2';
 
 import Campaign from '../../carp/campaign/campaign.entity';
@@ -63,7 +64,7 @@ export default class CampaignCommand extends Command {
 
             // TODO: add proper monsters and/treasure here
             let monsters = 0;
-            const monstersDb = [];
+            const monstersDb: Monster[] = [];
             for (let index = 0; index < level.room_count; index += 1) {
               const randomRoom = level.rooms[`${index}`];
               // eslint-disable-next-line no-continue
@@ -81,15 +82,17 @@ export default class CampaignCommand extends Command {
                     if (monstersDb.find((m) => m.position === new Vector2(randomX, randomY))) count -= 1;
                     // TODO: should make a look-up database for archetypes
                     const randMonster = random.dice('d2');
-                    let mon;
+                    let mon: Monster;
                     if (randMonster === 1) {
                       mon = new Ghost(1, new Vector2(randomX, randomY));
                     } else if (randMonster === 2) {
                       mon = new Rat(1, new Vector2(randomX, randomY));
                     }
 
-                    monstersDb.push(mon);
-                    monsters += 1;
+                    if (mon) {
+                      monstersDb.push(mon);
+                      monsters += 1;
+                    }
                   }
                 }
               }
@@ -99,7 +102,7 @@ export default class CampaignCommand extends Command {
             const campaign = new Campaign();
             campaign.characters = [];
             campaign.roomId = room.id;
-            campaign.monsters = monstersDb;
+            campaign.monsters = monstersDb as never[];
 
             const map = new Map(
               level.width,

@@ -13,6 +13,7 @@ import Monster from './character/monster.entity';
 
 import Map from './helpers/Map';
 import Player from './character/player.entity';
+import { World, MapMarkers } from './types/MapObject';
 
 export default class CampaignManager {
   private _dependencies: Dependencies;
@@ -321,16 +322,6 @@ export default class CampaignManager {
     const msg = [];
     const sight = args[1] && args[1] === 'all' ? -1 : 3;
 
-    const mapMarkers = {
-      0: ':white_large_square:',
-      1: ':black_large_square:',
-      2: ':white_large_square:',
-      3: ':door:',
-      4: ':door:',
-      5: ':checkered_flag:',
-      6: ':triangular_flag_on_post:',
-    };
-
     for (let i = 0; i < currentMap.world.length; i += 1) {
       let line = '';
       for (let j = 0; j < currentMap.world[i].length; j += 1) {
@@ -343,7 +334,7 @@ export default class CampaignManager {
           } else if (monsterHere) {
             line += monsterHere.graphic;
           } else {
-            line += mapMarkers[currentMap.world[i][j]];
+            line += MapMarkers[currentMap.world[i][j]];
           }
         }
       }
@@ -353,8 +344,8 @@ export default class CampaignManager {
   }
 
   private async walkCommand(message: Discord.Message, args: string[]): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [matchedChar, charIndex, player] = this.findCharInMessage(message);
+    const [matchedChar] = this.findCharInMessage(message);
+
     if (matchedChar.gameState === this.GameState.GivenUp) {
       this.givenUpCommand(message);
       return;
@@ -363,6 +354,7 @@ export default class CampaignManager {
       this.winnerCommand(message);
       return;
     }
+
     const currentMap = this._campaign.dungeon;
 
     if (args[1]) {
@@ -373,7 +365,7 @@ export default class CampaignManager {
         case 'n':
           if (
             matchedChar.position.y - 1 <= 0 ||
-            currentMap.world[matchedChar.position.y - 1][matchedChar.position.x] === 2
+            currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y - 1 })
           ) {
             message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
@@ -385,7 +377,7 @@ export default class CampaignManager {
         case 'e':
           if (
             matchedChar.position.x + 1 >= currentMap.width ||
-            currentMap.world[matchedChar.position.y][matchedChar.position.x + 1] === 2
+            currentMap.isWall({ x: matchedChar.position.x + 1, y: matchedChar.position.y })
           ) {
             message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
@@ -397,7 +389,7 @@ export default class CampaignManager {
         case 'w':
           if (
             matchedChar.position.x - 1 <= 0 ||
-            currentMap.world[matchedChar.position.y][matchedChar.position.x - 1] === 2
+            currentMap.isWall({ x: matchedChar.position.x - 1, y: matchedChar.position.y })
           ) {
             message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
@@ -409,7 +401,7 @@ export default class CampaignManager {
         case 's':
           if (
             matchedChar.position.y + 1 >= currentMap.height ||
-            currentMap.world[matchedChar.position.y + 1][matchedChar.position.x] === 2
+            currentMap.isWall({ x: matchedChar.position.x, y: matchedChar.position.y + 1 })
           ) {
             message.channel.send(`> **${matchedChar.name}** cannot pass that way.`);
           } else {
@@ -594,7 +586,7 @@ export default class CampaignManager {
     return false;
   }
 
-  getSurroundings(world: [[]], vec: Vector2, range: number, uid: string): string[] {
+  getSurroundings(world: World, vec: Vector2, range: number, uid: string): string[] {
     const result = [];
     const allChar = this._campaign.characters;
     const allMon = this._campaign.monsters;
