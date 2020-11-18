@@ -54,6 +54,10 @@ export default class App {
   }
 
   public exit(): void {
+    if (!this._dependencies) {
+      return;
+    }
+
     if (this._dependencies.mongoService) {
       this._dependencies.mongoService.disconnect();
     }

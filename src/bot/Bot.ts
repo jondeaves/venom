@@ -1,9 +1,14 @@
 import Discord from 'discord.js';
+import { getRepository } from 'typeorm';
 
 import Dependencies from '../core/types/Dependencies';
 
+import CampaignManager from '../carp/CampaignManager';
+import Campaign from '../carp/campaign/campaign.entity';
+
 import Command from './commands/Command';
 import AddGreetingCommand from './commands/add-greeting.command';
+import CampaignCommand from './commands/campaign.command';
 import CharacterCommand from './commands/character.command';
 import EightBallCommand from './commands/eight-ball.command';
 import HelpCommand from './commands/help.command';
@@ -22,7 +27,7 @@ export default class Bot {
   }
 
   private setCommands(): void {
-    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
 
     // Load in our commands for the command handler
     // TODO: Refactor this into a CommandHandler class?
@@ -33,6 +38,14 @@ export default class Bot {
       'Adds a string to the list greetings used when new users connect to server! Include `{name}` in your message to replace with the new users name.',
       [`\`${prefix}addgreeting Welcome to the club {name}\``],
     );
+    const campaignCmd = new CampaignCommand(
+      this._dependencies,
+      'campaign',
+      ['rpg'],
+      'Manages campaign settings such as starting a campaign and stopping a campaign.',
+      [`\`${prefix}campaign start\``],
+    );
+
     const characterCmd = new CharacterCommand(
       this._dependencies,
       'character',
@@ -82,6 +95,7 @@ export default class Bot {
     );
 
     this._commandList.set(addGreetingCmd.name, addGreetingCmd);
+    this._commandList.set(campaignCmd.name, campaignCmd);
     this._commandList.set(characterCmd.name, characterCmd);
     this._commandList.set(eightBallCmd.name, eightBallCmd);
     this._commandList.set(pingCmd.name, pingCmd);
@@ -90,8 +104,17 @@ export default class Bot {
     this._commandList.set(quoteCmd.name, quoteCmd);
 
     // Set custom data on commands
+    this._commandList.get('campaign').commandData = {
+      commandList: this._commandList,
+      prefix,
+    };
+
     this._commandList.get('help').commandData = {
       commandList: this._commandList,
+      prefix,
+    };
+
+    this._commandList.get('character').commandData = {
       prefix,
     };
   }
@@ -109,7 +132,7 @@ export default class Bot {
 
     // Perform connect, throw the error if we can't
     try {
-      await this._discordClient.login(this._dependencies.configService.get('DISCORD_BOT_TOKEN'));
+      await this._discordClient.login(this._dependencies.configService.DISCORD_BOT_TOKEN);
     } catch (error) {
       const errMsg = `Cannot initialise Discord client. Check the token: ${this._dependencies.configService.get(
         'DISCORD_BOT_TOKEN',
@@ -126,7 +149,45 @@ export default class Bot {
   }
 
   private async onMessage(message: Discord.Message): Promise<void> {
-    const prefix = this._dependencies.configService.get('BOT_TRIGGER');
+    if (!message.author.bot) {
+      const isRPG = await this.handleRPG(message);
+
+      if (!isRPG) {
+        this.handleBot(message);
+      }
+    }
+  }
+
+  private async handleRPG(message: Discord.Message): Promise<boolean> {
+    // Check if this is for an rpg campaign first
+    const campaignRepository = getRepository(Campaign);
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
+    const result = await campaignRepository.find({
+      where: { roomId: message.channel.id },
+      relations: ['characters', 'monsters'],
+    });
+
+    if (!result || result.length === 0) {
+      return false;
+    }
+
+    const campaign = result[0];
+    const matchedChar = campaign.characters.findIndex((char) => char.uid === message.author.id);
+
+    if (matchedChar === -1) {
+      message.reply(
+        `it looks like you're not part of this campaign to see any information. Try \`${prefix}character create <name>\` to set up a character, first.`,
+      );
+    } else {
+      // Pass through to campaign manager
+      const campaignManager = new CampaignManager(this._dependencies, campaign);
+      await campaignManager.execute(message);
+    }
+    return true;
+  }
+
+  private async handleBot(message: Discord.Message): Promise<void> {
+    const prefix = this._dependencies.configService.BOT_TRIGGER;
 
     // If the message either doesn't start with the prefix or was sent by a bot, exit early.
     if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) {
@@ -149,6 +210,8 @@ export default class Bot {
         await command.execute(message, args);
       } catch (error) {
         this._dependencies.loggerService.log('error', error.message);
+        // eslint-disable-next-line no-console
+        console.error(error);
         message.reply('there was an error trying to follow that command!');
       }
     }

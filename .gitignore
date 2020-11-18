@@ -38,3 +38,4 @@ lerna-debug.log*
 .vscode/
 **/logs/**
 src/tools/outputs
+coverage

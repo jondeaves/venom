@@ -1,18 +1,19 @@
-import { PrimaryGeneratedColumn, Entity, Column, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import Vector2 from '../../core/helpers/Vector2';
-// eslint-disable-next-line import/no-cycle
-import Player from './player.entity';
 
 @Entity()
-export default class Character {
+export default class Monster {
   @PrimaryGeneratedColumn()
   id: string;
 
   @Column()
-  uid: string;
+  name: string;
 
   @Column()
-  name: string;
+  level: number;
+
+  @Column()
+  expvalue: number;
 
   @Column()
   max_health: number;
@@ -37,10 +38,4 @@ export default class Character {
 
   @Column()
   graphic: string;
-
-  @Column()
-  gameState: number;
-
-  @ManyToOne(() => Player, (player) => player.characters)
-  player: Player;
 }

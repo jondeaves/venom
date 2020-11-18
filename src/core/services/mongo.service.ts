@@ -15,13 +15,13 @@ export default class MongoService {
 
   public async connect(): Promise<boolean> {
     const prom = new Promise((resolve, reject) => {
-      this._mongoClient = new mongodb.MongoClient(this._configService.get('MONGODB_URI'), { useUnifiedTopology: true });
+      this._mongoClient = new mongodb.MongoClient(this._configService.MONGODB_URI, { useUnifiedTopology: true });
 
       this._mongoClient.connect((error) => {
         if (error) {
           reject(error);
         } else {
-          this._db = this._mongoClient.db(this._configService.get('MONGODB_DB_NAME'));
+          this._db = this._mongoClient.db(this._configService.MONGODB_DB_NAME);
 
           resolve();
         }

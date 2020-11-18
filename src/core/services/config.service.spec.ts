@@ -55,27 +55,27 @@ describe('ConfigService', () => {
     });
 
     it('should return correct value for BOT_TRIGGER', async () => {
-      expect(configService.get('BOT_TRIGGER')).to.be.equal('1');
+      expect(configService.BOT_TRIGGER).to.be.equal('1');
     });
 
     it('should return correct value for DISCORD_BOT_TOKEN', async () => {
-      expect(configService.get('DISCORD_BOT_TOKEN')).to.be.equal('2');
+      expect(configService.DISCORD_BOT_TOKEN).to.be.equal('2');
     });
 
     it('should return correct value for MONGODB_URI', async () => {
-      expect(configService.get('MONGODB_URI')).to.be.equal('3');
+      expect(configService.MONGODB_URI).to.be.equal('3');
     });
 
     it('should return correct value for MONGODB_DB_NAME', async () => {
-      expect(configService.get('MONGODB_DB_NAME')).to.be.equal('4');
+      expect(configService.MONGODB_DB_NAME).to.be.equal('4');
     });
 
     it('should return correct value for NODE_ENV', async () => {
-      expect(configService.get('NODE_ENV')).to.be.equal('5');
+      expect(configService.NODE_ENV).to.be.equal('5');
     });
 
     it('should return correct value for LOG_LEVEL', async () => {
-      expect(configService.get('LOG_LEVEL')).to.be.equal('6');
+      expect(configService.LOG_LEVEL).to.be.equal('6');
     });
   });
 });

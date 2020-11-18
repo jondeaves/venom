@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { createConnection } from 'typeorm';
 
 import seedCharacters from './characters';
+import seedCampaigns from './campaigns';
 
 dotenv.config({ path: path.resolve(__dirname, '../', '.env') });
 
@@ -20,9 +21,7 @@ async function seed(): Promise<void> {
 
     // These perform the actual seeding
     const characters = await seedCharacters(connection);
-
-    // eslint-disable-next-line no-console
-    console.log(characters);
+    await seedCampaigns(connection, characters);
 
     // Close things off
     await connection.close();
